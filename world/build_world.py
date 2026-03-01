@@ -98,6 +98,9 @@ def build_world():
     from world.help_entries import create_help_entries
     create_help_entries()
 
+    # Update the Limbo room (Evennia's default #2) with wrestling backstory
+    _update_limbo_room()
+
     logger.log_info("KAYFABE: World build complete!")
     return rooms
 
@@ -481,3 +484,48 @@ def _create_economy_script():
         persistent=True,
     )
     logger.log_info(f"    Created EconomyTickScript: {script}")
+
+
+def _update_limbo_room():
+    """Update the default Limbo room (#2) with wrestling backstory."""
+    from evennia.objects.models import ObjectDB
+
+    try:
+        limbo = ObjectDB.objects.get(id=2)
+    except ObjectDB.DoesNotExist:
+        logger.log_warn("    Limbo room (#2) not found, skipping")
+        return
+
+    limbo.key = "Behind the Curtain"
+    limbo.db.desc = (
+        "\n"
+        "|w============================================================|n\n"
+        "\n"
+        "|xSomewhere beyond the curtain, between the roar of the crowd\n"
+        "and the silence of an empty arena, you stand at the threshold.|n\n"
+        "\n"
+        "|xThis is a world where all eras of professional wrestling exist\n"
+        "at once — where backyard brawlers tape matches on camcorders in\n"
+        "VFW halls, where young lions take bumps on concrete floors in\n"
+        "Pensacola, where territory kings rule Memphis and Mid-South, and\n"
+        "where the bright lights of Madison Square Garden beckon to those\n"
+        "with enough talent, grit, and kayfabe to make it.|n\n"
+        "\n"
+        "|xThe year doesn't matter here. What matters is the |wbusiness|x.|n\n"
+        "\n"
+        "|xFrom the dusty county fairgrounds of the Gulf Coast to the\n"
+        "neon glow of World Class Championship Wrestling in Dallas, from\n"
+        "the blood-soaked canvas of ECW's Bingo Hall to the roaring crowds\n"
+        "of the Tokyo Dome — every territory is alive, every card is\n"
+        "running, and every ring is waiting for someone to step through\n"
+        "the ropes.|n\n"
+        "\n"
+        "|xThe question is: |wcan you protect the business?|n\n"
+        "\n"
+        "|w============================================================|n\n"
+        "\n"
+        "  |xYou are about to create your wrestler.|n\n"
+        "  |xThe curtain parts. The crowd is waiting.|n\n"
+    )
+    limbo.save()
+    logger.log_info(f"    Updated Limbo room: {limbo.key} (#{limbo.id})")
