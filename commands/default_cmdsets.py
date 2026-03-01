@@ -1,96 +1,114 @@
 """
-Command sets
-
-All commands in the game must be grouped in a cmdset.  A given command
-can be part of any number of cmdsets and cmdsets can be added/removed
-and merged onto entities at runtime.
-
-To create new commands to populate the cmdset, see
-`commands/command.py`.
-
-This module wraps the default command sets of Evennia; overloads them
-to add/remove commands from the default lineup. You can create your
-own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
-
+Kayfabe: Protect the Business — Command sets.
 """
 
 from evennia import default_cmds
 
+# Career
+from commands.career import CmdStats, CmdRank, CmdTurn, CmdTitles
+
+# Wrestling match
+from commands.wrestling import (
+    CmdWrestle, CmdWork, CmdSell, CmdComeback,
+    CmdFinish, CmdKickout, CmdMoves, CmdCard, CmdHope,
+)
+
+# Promo
+from commands.promo import CmdPromo
+
+# Training
+from commands.training import CmdTrain
+
+# Travel
+from commands.travel import CmdTravel
+
+# PvP
+from commands.pvp import CmdChallenge, CmdAccept, CmdTeam, CmdBetray, CmdFeud
+
+# Manager
+from commands.manager import CmdHire, CmdFire, CmdManagerPromo, CmdManagerInterfere
+
+# Economy
+from commands.economy import CmdBalance, CmdBuy, CmdSideJob
+
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
-    The `CharacterCmdSet` contains general in-game commands like `look`,
-    `get`, etc available on in-game Character objects. It is merged with
-    the `AccountCmdSet` when an Account puppets a Character.
+    The CharacterCmdSet — commands available to in-game characters.
     """
 
     key = "DefaultCharacter"
 
     def at_cmdset_creation(self):
-        """
-        Populates the cmdset
-        """
         super().at_cmdset_creation()
-        #
-        # any commands you add below will overload the default ones.
-        #
+
+        # Career
+        self.add(CmdStats())
+        self.add(CmdRank())
+        self.add(CmdTurn())
+        self.add(CmdTitles())
+
+        # Wrestling
+        self.add(CmdWrestle())
+        self.add(CmdWork())
+        self.add(CmdSell())
+        self.add(CmdComeback())
+        self.add(CmdFinish())
+        self.add(CmdKickout())
+        self.add(CmdMoves())
+        self.add(CmdCard())
+        self.add(CmdHope())
+
+        # Promo
+        self.add(CmdPromo())
+
+        # Training
+        self.add(CmdTrain())
+
+        # Travel
+        self.add(CmdTravel())
+
+        # PvP
+        self.add(CmdChallenge())
+        self.add(CmdAccept())
+        self.add(CmdTeam())
+        self.add(CmdBetray())
+        self.add(CmdFeud())
+
+        # Manager
+        self.add(CmdHire())
+        self.add(CmdFire())
+        self.add(CmdManagerPromo())
+        self.add(CmdManagerInterfere())
+
+        # Economy
+        self.add(CmdBalance())
+        self.add(CmdBuy())
+        self.add(CmdSideJob())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
-    """
-    This is the cmdset available to the Account at all times. It is
-    combined with the `CharacterCmdSet` when the Account puppets a
-    Character. It holds game-account-specific commands, channel
-    commands, etc.
-    """
+    """Account-level commands."""
 
     key = "DefaultAccount"
 
     def at_cmdset_creation(self):
-        """
-        Populates the cmdset
-        """
         super().at_cmdset_creation()
-        #
-        # any commands you add below will overload the default ones.
-        #
 
 
 class UnloggedinCmdSet(default_cmds.UnloggedinCmdSet):
-    """
-    Command set available to the Session before being logged in.  This
-    holds commands like creating a new account, logging in, etc.
-    """
+    """Commands available before login."""
 
     key = "DefaultUnloggedin"
 
     def at_cmdset_creation(self):
-        """
-        Populates the cmdset
-        """
         super().at_cmdset_creation()
-        #
-        # any commands you add below will overload the default ones.
-        #
 
 
 class SessionCmdSet(default_cmds.SessionCmdSet):
-    """
-    This cmdset is made available on Session level once logged in. It
-    is empty by default.
-    """
+    """Session-level commands."""
 
     key = "DefaultSession"
 
     def at_cmdset_creation(self):
-        """
-        This is the only method defined in a cmdset, called during
-        its creation. It should populate the set with command instances.
-
-        As and example we just add the empty base `Command` object.
-        It prints some info.
-        """
         super().at_cmdset_creation()
-        #
-        # any commands you add below will overload the default ones.
-        #

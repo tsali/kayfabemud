@@ -10,11 +10,18 @@ Mystic BBS connects via rlogin (RFC 1282). This bridge:
   3. Connects to Evennia's telnet port.
   4. Automates login using Evennia 5.x command-based login:
        connect <username> <password>        (existing account)
-       create <username> <password> + Y     (new account)
+       create <username> <password> + Y     (new account, then connect)
   5. Bridges the session bidirectionally once logged in.
 
 The shared secret password is BRIDGE_PASSWORD below. It must match
 BBS_BRIDGE_PASSWORD in both live and dev settings.py.
+
+Evennia 5.x login response strings (from testing):
+  Banner ends with: "look will re-show this screen."
+  Connect success:  "You become"
+  Connect failure:  "Username and/or password is incorrect."
+  Create confirm:   "[Y]/N?"
+  After Y:          (no response — account created silently)
 """
 
 import asyncio
@@ -23,8 +30,6 @@ import re
 import sys
 
 BRIDGE_PASSWORD = "pepsicola_bbs_secret_2026"
-
-IAC = 0xFF
 
 logging.basicConfig(
     level=logging.INFO,
@@ -42,7 +47,6 @@ def parse_rlogin_header(data: bytes):
     """
     if not data or data[0] != 0:
         return None
-    fields = data[1:].split(b"\\x00")  # raw
     fields = data[1:].split(b"\x00")
     if len(fields) < 3:
         return None
@@ -51,53 +55,19 @@ def parse_rlogin_header(data: bytes):
     return client_user, server_user
 
 
-async def read_with_timeout(reader: asyncio.StreamReader, timeout: float = 5.0) -> bytes:
-    """Read available data with timeout."""
-    try:
-        return await asyncio.wait_for(reader.read(4096), timeout=timeout)
-    except asyncio.TimeoutError:
-        return b""
-
-
 def strip_ansi_iac(data: bytes) -> str:
     """Strip Telnet IAC sequences and ANSI codes, return clean text."""
-    # Strip 3-byte IAC option sequences
     data = re.sub(b"\xff[\xfb-\xfe].", b"", data)
-    # Strip 2-byte IAC commands
     data = re.sub(b"\xff.", b"", data)
-    # Strip ANSI color/control sequences
     data = re.sub(b"\x1b\\[[^m]*m", b"", data)
     data = re.sub(b"\x1b\\[[^a-zA-Z]*[a-zA-Z]", b"", data)
     return data.decode("utf-8", errors="replace")
 
 
-async def read_until_quiet(reader: asyncio.StreamReader, quiet_timeout: float = 1.5, max_total: float = 15.0) -> bytes:
-    """
-    Read from reader until no new data arrives for quiet_timeout seconds,
-    or max_total seconds have elapsed.
-    Returns all accumulated data.
-    """
-    buf = b""
-    start = asyncio.get_event_loop().time()
-    while True:
-        elapsed = asyncio.get_event_loop().time() - start
-        if elapsed >= max_total:
-            break
-        try:
-            chunk = await asyncio.wait_for(reader.read(4096), timeout=quiet_timeout)
-            if not chunk:
-                break
-            buf += chunk
-        except asyncio.TimeoutError:
-            # No data for quiet_timeout — we're done
-            break
-    return buf
-
-
 async def read_until_pattern(reader: asyncio.StreamReader, pattern: str, timeout: float = 15.0) -> bytes:
     """
     Read from reader (stripping IAC/ANSI) until pattern found in clean text.
-    Returns raw accumulated bytes.
+    Returns raw accumulated bytes. Raises asyncio.TimeoutError or ConnectionError.
     """
     raw_buf = b""
     clean_buf = ""
@@ -106,7 +76,7 @@ async def read_until_pattern(reader: asyncio.StreamReader, pattern: str, timeout
     while True:
         remaining = deadline - asyncio.get_event_loop().time()
         if remaining <= 0:
-            raise asyncio.TimeoutError(f"Timed out waiting for {pattern!r}; got: {clean_buf!r}")
+            raise asyncio.TimeoutError(f"Timed out waiting for {pattern!r}; got: {clean_buf[-200:]!r}")
         try:
             chunk = await asyncio.wait_for(reader.read(4096), timeout=min(remaining, 1.0))
         except asyncio.TimeoutError:
@@ -117,6 +87,32 @@ async def read_until_pattern(reader: asyncio.StreamReader, pattern: str, timeout
         clean_buf += strip_ansi_iac(chunk)
         if pattern in clean_buf:
             return raw_buf
+
+
+async def read_until_any(reader: asyncio.StreamReader, patterns: list, timeout: float = 15.0):
+    """
+    Read until any pattern in the list is found in the clean text.
+    Returns (raw_bytes, matched_pattern). Raises asyncio.TimeoutError or ConnectionError.
+    """
+    raw_buf = b""
+    clean_buf = ""
+    deadline = asyncio.get_event_loop().time() + timeout
+
+    while True:
+        remaining = deadline - asyncio.get_event_loop().time()
+        if remaining <= 0:
+            raise asyncio.TimeoutError(f"Timed out waiting for any of {patterns!r}; got: {clean_buf[-200:]!r}")
+        try:
+            chunk = await asyncio.wait_for(reader.read(4096), timeout=min(remaining, 1.0))
+        except asyncio.TimeoutError:
+            continue
+        if not chunk:
+            raise ConnectionError(f"Connection closed waiting for any of {patterns!r}")
+        raw_buf += chunk
+        clean_buf += strip_ansi_iac(chunk)
+        for p in patterns:
+            if p in clean_buf:
+                return raw_buf, p
 
 
 async def bridge_bidirectional(
@@ -206,76 +202,57 @@ async def handle_connection(
     log.info(f"Connected to Evennia at {evennia_host}:{evennia_port}")
 
     # --- Step 3: Automate login (Evennia 5.x command-based) ---
-    # Evennia 5.x shows a welcome banner, no interactive prompts.
-    # Login: `connect <user> <pass>` → success shows "You become X."
-    # New account: `create <user> <pass>` → confirmation "[Y]/N?" → send Y
+    # Evennia 5.x welcome banner ends with "look will re-show this screen."
+    # Login:  connect <user> <pass>  → "You become <name>."
+    # Failure: "Username and/or password is incorrect."
+    # Create: create <user> <pass>   → "[Y]/N?" prompt → Y → silent → then connect
 
     try:
-        # Read and discard the welcome banner (wait until quiet)
-        banner = await read_until_quiet(mud_reader, quiet_timeout=1.5, max_total=10.0)
-        banner_text = strip_ansi_iac(banner)
-        log.debug(f"Banner for {bbs_username!r}: {banner_text[:100]!r}")
+        # Wait for banner to finish (pattern at end of Evennia 5.x welcome text)
+        await read_until_pattern(mud_reader, "look will re-show", timeout=15.0)
+        log.debug(f"Banner received for {bbs_username!r}")
 
-        # Attempt to connect with existing credentials
         connect_cmd = f"connect {bbs_username} {BRIDGE_PASSWORD}\r\n"
         mud_writer.write(connect_cmd.encode())
         await mud_writer.drain()
         log.debug(f"Sent: connect {bbs_username!r} ***")
 
-        # Read response
-        resp_raw = await read_until_quiet(mud_reader, quiet_timeout=2.0, max_total=10.0)
+        # Wait for success or failure
+        resp_raw, matched = await read_until_any(
+            mud_reader,
+            ["You become", "incorrect"],
+            timeout=10.0,
+        )
         resp_text = strip_ansi_iac(resp_raw)
-        log.debug(f"connect response: {resp_text[:150]!r}")
+        log.debug(f"connect response (matched {matched!r}): {resp_text[:120]!r}")
 
-        if "You become" in resp_text or "logged in" in resp_text.lower():
-            # Existing account logged in successfully
+        if matched == "You become":
+            # Existing account — already logged in
             log.info(f"Existing account login OK for {bbs_username!r}")
-            # Forward what we've already received to the BBS client
             bbs_writer.write(resp_raw)
             await bbs_writer.drain()
 
-        elif "incorrect" in resp_text.lower() or "not found" in resp_text.lower() or "no account" in resp_text.lower():
-            # Account doesn't exist — create it, then connect
+        else:
+            # "incorrect" → account doesn't exist yet, create it
             log.info(f"Account {bbs_username!r} not found; creating")
             create_cmd = f"create {bbs_username} {BRIDGE_PASSWORD}\r\n"
             mud_writer.write(create_cmd.encode())
             await mud_writer.drain()
 
-            # Read confirmation prompt: "Is this what you intended? [Y]/N?"
-            conf_raw = await read_until_quiet(mud_reader, quiet_timeout=2.0, max_total=10.0)
-            conf_text = strip_ansi_iac(conf_raw)
-            log.debug(f"create confirmation: {conf_text[:150]!r}")
+            # Wait for confirmation prompt: "Is this what you intended? [Y]/N?"
+            await read_until_pattern(mud_reader, "[Y]/N?", timeout=10.0)
+            mud_writer.write(b"Y\r\n")
+            await mud_writer.drain()
 
-            if "[Y]" in conf_text or "intended" in conf_text.lower():
-                mud_writer.write(b"Y\r\n")
-                await mud_writer.drain()
-                # Read the create success response
-                create_resp_raw = await read_until_quiet(mud_reader, quiet_timeout=2.0, max_total=10.0)
-                create_resp_text = strip_ansi_iac(create_resp_raw)
-                log.debug(f"create result: {create_resp_text[:100]!r}")
+            # Evennia sends no response after Y — account is created silently.
+            # Immediately send connect to log in.
+            mud_writer.write(connect_cmd.encode())
+            await mud_writer.drain()
 
-                # Now connect to actually log in (create doesn't log you in automatically)
-                mud_writer.write(connect_cmd.encode())
-                await mud_writer.drain()
-                login_raw = await read_until_quiet(mud_reader, quiet_timeout=2.0, max_total=10.0)
-                login_text = strip_ansi_iac(login_raw)
-                log.info(f"Account created + connected for {bbs_username!r}: {login_text[:80]!r}")
-                # Forward post-login output to BBS client
-                bbs_writer.write(login_raw)
-                await bbs_writer.drain()
-            else:
-                # Unexpected response
-                log.error(f"Unexpected create response for {bbs_username!r}: {conf_text!r}")
-                bbs_writer.write(b"\r\nLogin failed. Please try again.\r\n")
-                await bbs_writer.drain()
-                mud_writer.close()
-                bbs_writer.close()
-                return
-        else:
-            # Unknown response — still bridge (might be already in game, or
-            # Evennia version difference). Forward what we got and bridge.
-            log.warning(f"Unexpected connect response for {bbs_username!r}: {resp_text[:100]!r}")
-            bbs_writer.write(resp_raw)
+            login_raw = await read_until_pattern(mud_reader, "You become", timeout=10.0)
+            login_text = strip_ansi_iac(login_raw)
+            log.info(f"Account created + connected for {bbs_username!r}: {login_text[:80]!r}")
+            bbs_writer.write(login_raw)
             await bbs_writer.drain()
 
     except (asyncio.TimeoutError, ConnectionError) as e:
