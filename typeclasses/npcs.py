@@ -79,6 +79,7 @@ class NPCWrestler(ObjectParent, DefaultCharacter):
         super().at_object_creation()
         self.db.npc_id = 0
         self.db.based_on = ""
+        self.db.gender = "Male"
         self.db.alignment = "Face"
         self.db.finisher_name = ""
         self.db.finisher_type = "power"

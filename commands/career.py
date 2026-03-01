@@ -82,10 +82,21 @@ class CmdStats(Command):
             f"|w{'=' * 44}|n\n"
         )
 
+        # Division from gender
+        gender = caller.db.gender or "Undisclosed"
+        division_map = {
+            "Male": "Men's Division",
+            "Female": "Women's Division",
+            "Non-Binary": "Open Division",
+            "Undisclosed": "Open Division",
+        }
+        division = division_map.get(gender, "Open Division")
+
         # Identity
         msg += (
             f"  Real Name:  |c{caller.db.real_name}|n\n"
             f"  Hometown:   |c{caller.db.hometown}|n\n"
+            f"  Division:   |c{division}|n\n"
             f"  Style:      |c{style}|n\n"
             f"  Alignment:  {align_str}\n"
             f"  Rank:       {rank_color}{rank}|n\n"
@@ -341,7 +352,7 @@ class CmdTitles(Command):
     help_category = "Career"
 
     def func(self):
-        from world.rules import TERRITORY_TITLES
+        from world.rules import TERRITORY_TITLES, TERRITORY_TITLES_WOMENS
 
         msg = f"\n|w{'=' * 50}|n\n|w  TERRITORY CHAMPIONSHIPS|n\n|w{'=' * 50}|n\n"
 
@@ -356,8 +367,11 @@ class CmdTitles(Command):
             msg += f"\n  |c{tier_name}|n\n"
             for terr in territories:
                 title = TERRITORY_TITLES.get(terr, "Unknown Title")
-                # TODO: Look up current holder from NPC data
                 msg += f"    {title:40s} |x[Vacant]|n\n"
+                # Show women's title if this territory has one
+                w_title = TERRITORY_TITLES_WOMENS.get(terr)
+                if w_title:
+                    msg += f"    {w_title:40s} |x[Vacant]|n\n"
 
         msg += f"\n|w{'=' * 50}|n"
         self.caller.msg(msg)

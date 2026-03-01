@@ -594,6 +594,16 @@ TERRITORY_TITLES = {
     "japan": "IWGP Heavyweight Championship",
 }
 
+# Women's championship variants (territories with women's divisions)
+TERRITORY_TITLES_WOMENS = {
+    "wwf": "WWF Women's Championship",
+    "wcw": "WCW Women's Championship",
+    "ecw": "ECW Women's Championship",
+    "japan": "IWGP Women's Championship",
+    "awa": "AWA Women's Championship",
+    "memphis": "Memphis Women's Championship",
+}
+
 
 def random_fan_encounter():
     """Return a random fan encounter dict, or None (40% chance of encounter)."""

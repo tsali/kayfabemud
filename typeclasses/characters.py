@@ -81,6 +81,7 @@ class Wrestler(ObjectParent, DefaultCharacter):
         # Identity
         self.db.real_name = ""
         self.db.hometown = ""
+        self.db.gender = "Undisclosed"
         self.db.wrestling_style = ""
         self.db.alignment = "Face"
 

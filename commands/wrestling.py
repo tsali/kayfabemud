@@ -413,6 +413,7 @@ class CmdCard(Command):
             level = npc.db.level or 1
             role = npc.db.role or "wrestler"
             finisher = npc.db.finisher_name or "Unknown"
+            gender = getattr(npc.db, 'gender', 'Male') or "Male"
 
             if align == "Face":
                 a_tag = "|g[Face]|n"
@@ -423,15 +424,24 @@ class CmdCard(Command):
             else:
                 a_tag = ""
 
+            # Division tag
+            if gender == "Male":
+                d_tag = " |w[M]|n"
+            elif gender == "Female":
+                d_tag = " |m[W]|n"
+            else:
+                d_tag = ""
+
             role_tag = ""
             if role == "trainer":
                 role_tag = " |m[Trainer]|n"
 
             caller.msg(
-                f"  |c{npc.key}|n {a_tag}{role_tag}\n"
+                f"  |c{npc.key}|n {a_tag}{d_tag}{role_tag}\n"
                 f"    Level {level} — Finisher: {finisher}"
             )
-        caller.msg(f"\n|wType 'wrestle <name>' to start a match.|n")
+        caller.msg(f"\n|wAnyone can challenge anyone.|n")
+        caller.msg(f"|wType 'wrestle <name>' to start a match.|n")
 
 
 class CmdHope(Command):

@@ -380,6 +380,7 @@ def _spawn_all_named_npcs(rooms):
         )
         npc.db.npc_id = npc_data["npc_id"]
         npc.db.based_on = npc_data.get("based_on", "")
+        npc.db.gender = npc_data.get("gender", "Male")
         npc.db.role = role
         npc.db.alignment = npc_data.get("alignment", "Face")
         npc.db.finisher_name = npc_data.get("finisher_name", "")
@@ -432,6 +433,7 @@ def _spawn_all_managers(rooms):
         )
         mgr.db.npc_id = mgr_data["npc_id"]
         mgr.db.based_on = mgr_data.get("based_on", "")
+        mgr.db.gender = mgr_data.get("gender", "Male")
         mgr.db.alignment = mgr_data.get("alignment", "Heel")
         mgr.db.style = mgr_data.get("style", "")
         mgr.db.specialty = mgr_data.get("specialty", "")

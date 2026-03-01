@@ -363,6 +363,51 @@ Buy home gym equipment (|wbuy equipment|n) for an additional training
 bonus that applies everywhere.
 """,
     },
+    {
+        "key": "divisions",
+        "category": "Game Guide",
+        "text": """
+|wDIVISIONS — Gender & Booking|n
+
+Wrestlers are booked into divisions based on gender selection at chargen.
+
+|cMen's Division|n (Male)
+  Booked primarily against other men. Compete for men's championships
+  (e.g., WWF Championship, NWA Mid-Atlantic Championship).
+
+|cWomen's Division|n (Female)
+  Booked primarily against other women. Compete for women's championships
+  (e.g., WWF Women's Championship, IWGP Women's Championship).
+
+|cOpen Division|n (Non-Binary / Undisclosed)
+  Booked 50/50 across both divisions, wherever the card needs you.
+  Eligible for any championship.
+
+|wIMPORTANT: Anyone can fight anyone.|n
+Divisions only affect how often promoters book you against same-division
+opponents. You can always challenge any wrestler regardless of division.
+
+|cBooking Weights|n
+  Same-division opponents are booked ~70% of the time.
+  Cross-division matches happen ~30% of the time.
+  Open Division wrestlers get a 50/50 split.
+
+|cTitle Eligibility|n
+  Men's Division: men's championships
+  Women's Division: women's championships
+  Open Division: any championship
+
+|cGear Flavor|n
+  All genders get the same +1 CHA mechanical bonus at tier 3+ gear.
+  The flavor text varies: "jacked physique" (Male), "show-stopping
+  attire" (Female), "unique presence" (Non-Binary), "enigmatic aura"
+  (Undisclosed).
+
+|cExisting Characters|n
+  Characters created before divisions were added default to "Undisclosed"
+  (Open Division). Use chargen to set a different gender.
+""",
+    },
 ]
 
 

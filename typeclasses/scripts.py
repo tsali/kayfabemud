@@ -771,8 +771,34 @@ class NPCSchedulerScript(DefaultScript):
                              and n.db.role == "wrestler"
                              and n.db.level >= 15]
                 if wrestlers:
-                    npc = random.choice(wrestlers)
-                    npc.issue_challenge()
+                    # Gender-weighted selection: prefer same-division NPCs
+                    players_in_room = [
+                        obj for obj in room.contents
+                        if isinstance(obj, Wrestler) and obj.db.chargen_complete
+                        and obj.sessions.count()
+                    ]
+                    if players_in_room:
+                        target_player = random.choice(players_in_room)
+                        p_gender = getattr(target_player.db, 'gender', 'Undisclosed') or 'Undisclosed'
+                        if p_gender in ("Non-Binary", "Undisclosed"):
+                            # 50/50, just pick anyone
+                            npc = random.choice(wrestlers)
+                        else:
+                            # 70% same division, 30% cross
+                            same = [n for n in wrestlers
+                                    if (getattr(n.db, 'gender', 'Male') or 'Male') == p_gender]
+                            cross = [n for n in wrestlers
+                                     if (getattr(n.db, 'gender', 'Male') or 'Male') != p_gender]
+                            if same and random.random() < 0.7:
+                                npc = random.choice(same)
+                            elif cross:
+                                npc = random.choice(cross)
+                            else:
+                                npc = random.choice(wrestlers)
+                        npc.issue_challenge()
+                    else:
+                        npc = random.choice(wrestlers)
+                        npc.issue_challenge()
 
     def _rotate_guests(self):
         """

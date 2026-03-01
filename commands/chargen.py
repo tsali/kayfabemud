@@ -177,6 +177,64 @@ def _set_hometown(caller, raw_string, **kwargs):
         caller.msg("|rHometown must be at least 2 characters.|n")
         return "node_hometown"
     caller.ndb._menutree.hometown = town
+    return "node_gender"
+
+
+# Gender options and their division rules
+GENDER_OPTIONS = {
+    "Male": {
+        "division": "Men's Division",
+        "desc": "Compete primarily for men's championships.",
+        "flavor": "jacked physique",
+    },
+    "Female": {
+        "division": "Women's Division",
+        "desc": "Compete primarily for women's championships.",
+        "flavor": "show-stopping attire",
+    },
+    "Non-Binary": {
+        "division": "Open Division",
+        "desc": "Booked 50/50 across both divisions, wherever the card needs you.",
+        "flavor": "unique presence",
+    },
+    "Undisclosed": {
+        "division": "Open Division",
+        "desc": "Same rules as Non-Binary. Your wrestling does the talking.",
+        "flavor": "enigmatic aura",
+    },
+}
+
+
+def node_gender(caller, raw_string, **kwargs):
+    """Choose gender / division."""
+    text = (
+        "\n|wGENDER / DIVISION|n\n"
+        "------------------\n"
+        "In the territories, divisions exist — but talent crosses all lines.\n"
+        "Anyone can fight anyone. This determines where promoters slot you\n"
+        "on most cards.\n\n"
+        "  |w1|n. |cMale|n — Men's division booking. Compete primarily for\n"
+        "     men's championships. Gear bonuses: \"jacked physique\" flavor.\n\n"
+        "  |w2|n. |cFemale|n — Women's division booking. Compete primarily for\n"
+        "     women's championships. Gear bonuses: \"show-stopping attire\" flavor.\n\n"
+        "  |w3|n. |cNon-Binary|n — Booked 50/50 across both divisions, wherever\n"
+        "     the card needs you. Compete for any championship.\n"
+        "     Gear bonuses: \"unique presence\" flavor.\n\n"
+        "  |w4|n. |cUndisclosed|n — Same rules as Non-Binary. Your wrestling\n"
+        "     does the talking.\n\n"
+        "Choose (1-4):"
+    )
+    options = (
+        {"key": "1", "desc": "Male", "goto": (_set_gender, {"gender": "Male"})},
+        {"key": "2", "desc": "Female", "goto": (_set_gender, {"gender": "Female"})},
+        {"key": "3", "desc": "Non-Binary", "goto": (_set_gender, {"gender": "Non-Binary"})},
+        {"key": "4", "desc": "Undisclosed", "goto": (_set_gender, {"gender": "Undisclosed"})},
+    )
+    return text, options
+
+
+def _set_gender(caller, raw_string, gender="Undisclosed", **kwargs):
+    caller.ndb._menutree.gender = gender
     return "node_style"
 
 
@@ -250,11 +308,41 @@ def node_stats(caller, raw_string, **kwargs):
     text += (
         f"\nTo allocate points, type: |w<stat> <points>|n\n"
         f"  Example: |wstr 5|n — adds 5 to Strength\n"
+        f"  Type |wrandom|n to let fate decide your stats.\n"
         f"  Type |wreset|n to start over, |wdone|n when finished.\n"
     )
 
     options = {"key": "_default", "goto": _process_stat_input}
     return text, options
+
+
+def _random_stat_allocation(style):
+    """Distribute 30 points randomly across 6 stats, respecting cap 15 per stat at creation."""
+    import random as _rand
+    style_bonuses = WRESTLING_STYLES.get(style, {})
+    alloc = {"str": 0, "agi": 0, "tec": 0, "cha": 0, "tou": 0, "psy": 0}
+    remaining = 30
+    stat_keys = list(alloc.keys())
+
+    while remaining > 0:
+        _rand.shuffle(stat_keys)
+        distributed_any = False
+        for key in stat_keys:
+            if remaining <= 0:
+                break
+            current_total = 5 + style_bonuses.get(key, 0) + alloc[key]
+            cap_room = 15 - current_total
+            if cap_room <= 0:
+                continue
+            # Give 1-5 points (or whatever fits)
+            give = min(_rand.randint(1, 5), cap_room, remaining)
+            alloc[key] += give
+            remaining -= give
+            distributed_any = True
+        if not distributed_any:
+            break  # all stats capped
+
+    return alloc, remaining
 
 
 def _process_stat_input(caller, raw_string, **kwargs):
@@ -266,6 +354,18 @@ def _process_stat_input(caller, raw_string, **kwargs):
             caller.msg(f"|rYou still have {menu.points_remaining} points to allocate.|n")
             return "node_stats"
         return "node_alignment"
+
+    if inp == "random":
+        alloc, leftover = _random_stat_allocation(menu.style)
+        menu.stat_alloc = alloc
+        menu.points_remaining = leftover
+        style_bonuses = WRESTLING_STYLES.get(menu.style, {})
+        caller.msg("|yFate has spoken! Here's what you got:|n")
+        for key in ["str", "agi", "tec", "cha", "tou", "psy"]:
+            total = 5 + style_bonuses.get(key, 0) + alloc[key]
+            caller.msg(f"  {STAT_NAMES[key]:12s} {total}")
+        caller.msg("|wType |yrandom|w to re-roll, |yreset|w to go manual, or |ydone|w to accept.|n")
+        return "node_stats"
 
     if inp == "reset":
         menu.stat_alloc = {"str": 0, "agi": 0, "tec": 0, "cha": 0, "tou": 0, "psy": 0}
@@ -456,6 +556,8 @@ def node_confirm(caller, raw_string, **kwargs):
         f"  Ring Name:  |c{menu.ring_name}|n\n"
         f"  Real Name:  |c{menu.real_name}|n\n"
         f"  Hometown:   |c{menu.hometown}|n\n"
+        f"  Gender:     |c{menu.gender}|n"
+        f" ({GENDER_OPTIONS[menu.gender]['division']})\n"
         f"  Style:      |c{style}|n\n"
         f"  Alignment:  "
     )
@@ -497,6 +599,7 @@ def node_finalize(caller, raw_string, **kwargs):
     # Store identity
     caller.db.real_name = menu.real_name
     caller.db.hometown = menu.hometown
+    caller.db.gender = menu.gender
     caller.db.wrestling_style = menu.style
     caller.db.alignment = menu.alignment
     caller.db.finisher_name = menu.finisher_name
