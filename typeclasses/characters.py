@@ -4,6 +4,8 @@ Kayfabe: Protect the Business — Wrestler Character typeclass.
 Uses Evennia's TraitHandler contrib for the 6 core stats.
 """
 
+import time
+
 from evennia.objects.objects import DefaultCharacter
 from evennia.utils import lazy_property
 
@@ -122,6 +124,14 @@ class Wrestler(ObjectParent, DefaultCharacter):
         self.db.finisher_name = ""
         self.db.finisher_type = ""
 
+        # Fatigue & Rest
+        self.db.fatigue_stacks = 0
+        self.db.rest_bonus_active = {}  # e.g. {"all": 2}
+        self.db.rest_bonus_expires = 0  # timestamp when rest bonus expires
+
+        # Player Houses
+        self.db.owned_houses = []  # list of house dbref ids
+
     def setup_traits(self):
         """Initialize the 6 core stats. Called during chargen after style is chosen."""
         for stat_key, stat_name in [
@@ -160,9 +170,55 @@ class Wrestler(ObjectParent, DefaultCharacter):
                     trait.base += points
 
     def get_stat(self, stat_key):
-        """Get current value of a stat."""
+        """Get current value of a stat, with fatigue penalty and rest bonus."""
         trait = self.traits.get(stat_key)
-        return trait.value if trait else 0
+        if not trait:
+            return 0
+        value = trait.value
+
+        # Apply fatigue penalty: -5% per stack
+        fatigue = self.db.fatigue_stacks or 0
+        if fatigue > 0:
+            penalty = fatigue * 0.05
+            value = value * (1.0 - penalty)
+
+        # Apply rest bonus if active and not expired
+        rest_bonus = self.db.rest_bonus_active or {}
+        expires = self.db.rest_bonus_expires or 0
+        if rest_bonus and time.time() < expires:
+            all_bonus = rest_bonus.get("all", 0)
+            stat_bonus = rest_bonus.get(stat_key, 0)
+            value += all_bonus + stat_bonus
+        elif rest_bonus and time.time() >= expires:
+            # Expired — clear it
+            self.db.rest_bonus_active = {}
+            self.db.rest_bonus_expires = 0
+
+        return max(1, int(value))
+
+    def clear_fatigue(self):
+        """Clear all fatigue stacks."""
+        self.db.fatigue_stacks = 0
+
+    def apply_rest_bonus(self, bonus_dict, duration=43200):
+        """Apply rest bonus. duration defaults to 12 hours (43200 seconds)."""
+        self.db.rest_bonus_active = bonus_dict
+        self.db.rest_bonus_expires = time.time() + duration
+
+    def is_in_safe_lodging(self):
+        """Check if character is in an InnRoom or owned PlayerHouse."""
+        from typeclasses.rooms import InnRoom, PlayerHouse
+        loc = self.location
+        if not loc:
+            return False
+        if isinstance(loc, InnRoom):
+            return True
+        if isinstance(loc, PlayerHouse):
+            owner = loc.db.owner or ""
+            allowed = loc.db.allowed_players or []
+            if owner == self.key or self.key in allowed:
+                return True
+        return False
 
     def get_match_quality_avg(self):
         """Average star rating across all matches."""
@@ -192,7 +248,33 @@ class Wrestler(ObjectParent, DefaultCharacter):
                 f"\n|w*** KAYFABE: Protect the Business ***|n\n"
                 f"Welcome back, |c{self.key}|n. "
                 f"You are at |w{self.location.key}|n.\n"
+                f"|yType |wcharcreate|y to make a new wrestler, "
+                f"|wcharselect|y to switch between them.|n\n"
             )
+
+            # Show fatigue warning
+            fatigue = self.db.fatigue_stacks or 0
+            if fatigue > 0:
+                penalty = fatigue * 5
+                self.msg(
+                    f"|r*** FATIGUE WARNING: {fatigue} stack{'s' if fatigue != 1 else ''} "
+                    f"(-{penalty}% all checks) ***|n\n"
+                    f"|xRest at an inn or your house to clear fatigue.|n\n"
+                )
+
+            # Show rest bonus status
+            rest_bonus = self.db.rest_bonus_active or {}
+            expires = self.db.rest_bonus_expires or 0
+            if rest_bonus and time.time() < expires:
+                remaining = int(expires - time.time())
+                hours = remaining // 3600
+                mins = (remaining % 3600) // 60
+                all_b = rest_bonus.get("all", 0)
+                bonus_str = f"+{all_b} all stats" if all_b else ""
+                self.msg(
+                    f"|g*** WELL-RESTED: {bonus_str} ({hours}h {mins}m remaining) ***|n\n"
+                )
+
             self.execute_cmd("look")
 
     def get_display_name(self, looker=None, **kwargs):

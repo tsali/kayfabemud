@@ -97,6 +97,7 @@ def build_world():
     # Create global scripts
     _create_scheduler_script()
     _create_economy_script()
+    _create_fatigue_script()
 
     # Create help entries
     from world.help_entries import create_help_entries
@@ -501,6 +502,23 @@ def _create_economy_script():
         persistent=True,
     )
     logger.log_info(f"    Created EconomyTickScript: {script}")
+
+
+def _create_fatigue_script():
+    """Create the global FatigueScript if it doesn't exist."""
+    from evennia.scripts.models import ScriptDB
+
+    existing = ScriptDB.objects.filter(db_key="fatigue_script")
+    if existing.exists():
+        logger.log_info("    FatigueScript already exists, skipping")
+        return
+
+    script = create_script(
+        "typeclasses.scripts.FatigueScript",
+        key="fatigue_script",
+        persistent=True,
+    )
+    logger.log_info(f"    Created FatigueScript: {script}")
 
 
 def _update_limbo_room():

@@ -116,6 +116,7 @@ NPC_WRESTLERS = [
     {"npc_id": 89, "name": '"Nightmare" Danny Dusk', "based_on": "Danny Davis", "territory": "ovw", "role": "authority", "alignment": "Face", "finisher_name": "n/a", "finisher_type": "power", "level": 30, "stats": (10, 7, 10, 15, 10, 16)},
     {"npc_id": 90, "name": "Jim Corwin", "based_on": "Jim Cornette", "territory": "ovw", "role": "authority", "alignment": "Heel", "finisher_name": "Tennis Racket", "finisher_type": "charisma", "level": 1, "stats": (4, 4, 6, 19, 4, 20)},
     {"npc_id": 91, "name": "Al Frost", "based_on": "Al Snow", "territory": "ovw", "role": "wrestler", "alignment": "Face", "finisher_name": "Snow Plow", "finisher_type": "power", "level": 28, "stats": (14, 11, 14, 13, 14, 15)},
+    {"npc_id": 381, "name": '"The East End Villain" Josh Ashcraft', "based_on": "Josh Ashcraft", "territory": "ovw", "role": "announcer", "alignment": "Heel", "finisher_name": "F-5", "finisher_type": "power", "level": 16, "stats": (14, 8, 10, 17, 13, 16)},
 
     # ----------------------------------------------------------
     # FCW / DSW / HWA DEVELOPMENTAL (#92-103)
@@ -300,6 +301,7 @@ NPC_MANAGERS = [
     {"npc_id": 1014, "name": "James Dixon", "based_on": "J.J. Dillon", "territory": "midatlantic", "alignment": "Heel", "style": "corporate fixer", "specialty": "Negotiation + booking influence", "cha": 14, "psy": 16, "retainer_cost": 130, "cut_percent": 20},
     {"npc_id": 1015, "name": "Sunshine Summers", "based_on": "Sunny", "territory": "wwf", "gender": "Female", "alignment": "Face", "style": "distraction specialist", "specialty": "CHA boost + merch bonus", "cha": 18, "psy": 11, "retainer_cost": 120, "cut_percent": 15},
     {"npc_id": 1016, "name": "Terri Goldwyn", "based_on": "Terri Runnels", "territory": "wwf", "gender": "Female", "alignment": "Heel", "style": "plays both sides", "specialty": "Distraction + double-cross potential", "cha": 15, "psy": 13, "retainer_cost": 100, "cut_percent": 20},
+    {"npc_id": 1017, "name": '"The East End Villain" Josh Ashcraft', "based_on": "Josh Ashcraft", "territory": "ovw", "alignment": "Anti-Hero", "style": "East End street-smart villain", "specialty": "Manages anyone to greatness, wrestling historian", "cha": 17, "psy": 16, "retainer_cost": 150, "cut_percent": 20},
 ]
 
 

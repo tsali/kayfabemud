@@ -9,7 +9,21 @@ from .objects import ObjectParent
 
 class Exit(ObjectParent, DefaultExit):
     """Standard exit between rooms."""
-    pass
+
+    def return_appearance(self, looker, **kwargs):
+        """When someone looks at an exit, show where it leads."""
+        dest = self.destination
+        if dest:
+            msg = f"|w{self.key}|n — leads to |c{dest.key}|n"
+            dest_desc = dest.db.desc
+            if dest_desc:
+                # Show first sentence of destination description as a preview
+                first_line = dest_desc.split("\n")[0].strip()
+                if len(first_line) > 120:
+                    first_line = first_line[:117] + "..."
+                msg += f"\n{first_line}"
+            return msg
+        return f"|w{self.key}|n — leads somewhere unknown."
 
 
 class TerritoryExit(ObjectParent, DefaultExit):

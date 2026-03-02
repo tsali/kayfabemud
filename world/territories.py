@@ -37,8 +37,7 @@ TERRITORIES["fhwa"] = {
                 "reads: 'FHWA WRESTLING TONIGHT — $3 ADMISSION'. You can hear a "
                 "crowd of maybe forty people inside, stamping on metal bleachers.\n\n"
                 "A cooler full of off-brand soda sits by the back door. Someone's "
-                "kid is doing backflips off a stack of pallets.\n\n"
-                "|wExits: |nsouth|w to the venue, |nnorth|w to the road.|n"
+                "kid is doing backflips off a stack of pallets."
             ),
         },
         {
@@ -57,8 +56,7 @@ TERRITORIES["fhwa"] = {
                 "that nobody's doing any top-rope moves. The crowd is a mix of "
                 "locals, a few kids, and someone's grandma who thinks this is bingo "
                 "night.\n\n"
-                "Type |wcard|n to see tonight's lineup. |wwrestle <name>|n to get in the ring.\n\n"
-                "|wExits: |nnorth|w to the parking lot, |nwest|w to the locker room.|n"
+                "Type |wcard|n to see tonight's lineup. |wwrestle <name>|n to get in the ring."
             ),
         },
         {
@@ -72,8 +70,22 @@ TERRITORIES["fhwa"] = {
                 "full of wrestling gear. A cracked mirror leans against the wall.\n\n"
                 "The other wrestlers — a mix of locals with homemade gimmicks — "
                 "are changing into their gear. Someone's taping their fists with "
-                "electrical tape.\n\n"
-                "|wExits: |neast|w back to the arena.|n"
+                "electrical tape."
+            ),
+        },
+        {
+            "key": "fhwa_motel",
+            "name": "Route 61 Motel",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("fhwa", "territory")],
+            "extras": {"inn_tier": 1, "rest_cost": 10, "rest_bonus": {}},
+            "desc": (
+                "A one-story cinder block motel on Route 61. The sign says "
+                "'VACANCY' in flickering neon. The rooms smell like cigarettes "
+                "and Pine-Sol. The bedspread hasn't been changed since the Reagan "
+                "administration.\n\n"
+                "It's ten bucks a night. You get a bed, a TV with three channels, "
+                "and a lock on the door. That's more than the parking lot offers."
             ),
         },
         {
@@ -99,6 +111,8 @@ TERRITORIES["fhwa"] = {
         ("east;e", "fhwa_locker", "fhwa_venue"),
         ("north;n", "fhwa_parking", "fhwa_road"),
         ("south;s", "fhwa_road", "fhwa_parking"),
+        ("east;e", "fhwa_parking", "fhwa_motel"),
+        ("west;w", "fhwa_motel", "fhwa_parking"),
     ],
     "exit_descs": {
         ("fhwa_parking", "south"): "Through the back door you can see the VFW hall — a low-ceilinged room with a 12-foot ring in the middle.",
@@ -127,8 +141,7 @@ TERRITORIES["gccw"] = {
                 "Spanish moss hangs from a live oak at the edge of the lot.\n\n"
                 "A hand-lettered banner reads: 'GCCW — SATURDAY NIGHT WARS'. "
                 "The building looks like it used to be an auto body shop. A few "
-                "rusty cars and one lifted truck sit in the gravel.\n\n"
-                "|wExits: |nsouth|w to the venue, |nnorth|w to the road.|n"
+                "rusty cars and one lifted truck sit in the gravel."
             ),
         },
         {
@@ -146,8 +159,7 @@ TERRITORIES["gccw"] = {
                 "fans push the hot Florida air around without actually cooling "
                 "anything. A VHS camcorder on a tripod records every show — "
                 "these tapes sometimes find their way to the right people.\n\n"
-                "Type |wcard|n to see tonight's lineup. |wwrestle <name>|n to get in the ring.\n\n"
-                "|wExits: |nnorth|w to the parking lot, |nwest|w to the locker room.|n"
+                "Type |wcard|n to see tonight's lineup. |wwrestle <name>|n to get in the ring."
             ),
         },
         {
@@ -161,8 +173,21 @@ TERRITORIES["gccw"] = {
                 "the wall. 'The Cage' is what the boys call it.\n\n"
                 "A cooler of water bottles sits on the floor (no Gatorade — "
                 "that's for the main event guys). A whiteboard on the wall shows "
-                "tonight's card in dry-erase marker.\n\n"
-                "|wExits: |neast|w back to the arena.|n"
+                "tonight's card in dry-erase marker."
+            ),
+        },
+        {
+            "key": "gccw_motel",
+            "name": "Gulf Breeze Motor Inn",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("gccw", "territory")],
+            "extras": {"inn_tier": 1, "rest_cost": 10, "rest_bonus": {}},
+            "desc": (
+                "A pastel-colored motel a block from the beach. The window AC "
+                "unit rattles but keeps the Florida humidity at bay. Sand tracks "
+                "across the carpet from every guest who's ever stayed.\n\n"
+                "Ten dollars gets you a bed and a shower. The ice machine is "
+                "outside your door. It almost makes you feel like a professional."
             ),
         },
         {
@@ -189,6 +214,8 @@ TERRITORIES["gccw"] = {
         ("east;e", "gccw_locker", "gccw_venue"),
         ("north;n", "gccw_parking", "gccw_road"),
         ("south;s", "gccw_road", "gccw_parking"),
+        ("east;e", "gccw_parking", "gccw_motel"),
+        ("west;w", "gccw_motel", "gccw_parking"),
     ],
     "exit_descs": {
         ("gccw_parking", "south"): "Through the open bay doors you can see the converted auto body shop — a regulation-size ring sits inside.",
@@ -335,8 +362,9 @@ TERRITORIES["pensacola"] = {
         {
             "key": "pens_motel",
             "name": "Beachside Motel",
-            "typeclass": "typeclasses.rooms.TerritoryRoom",
+            "typeclass": "typeclasses.rooms.InnRoom",
             "tags": [("pensacola", "territory")],
+            "extras": {"inn_tier": 2, "rest_cost": 25, "rest_bonus": {"all": 1}},
             "desc": (
                 "A one-story motel a block from the beach. Peeling paint, "
                 "window AC units that might work, and a neon 'VACANCY' sign "
@@ -495,6 +523,20 @@ TERRITORIES["memphis"] = {
             ),
         },
         {
+            "key": "mem_hotel",
+            "name": "Beale Street Hotel",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("memphis", "territory")],
+            "extras": {"inn_tier": 3, "rest_cost": 75, "rest_bonus": {"all": 2}},
+            "desc": (
+                "A mid-range hotel on Beale Street. Clean rooms, working AC, "
+                "and a lobby bar where blues plays until midnight. The wrestlers "
+                "who can afford it stay here — it beats sleeping in the car.\n\n"
+                "The front desk keeps kayfabe — they've learned not to comment "
+                "when bitter rivals check into adjacent rooms."
+            ),
+        },
+        {
             "key": "mem_travel",
             "name": "I-40 / I-55 Interchange",
             "typeclass": "typeclasses.rooms.TravelHub",
@@ -528,6 +570,9 @@ TERRITORIES["memphis"] = {
         ("east;e", "mem_office", "mem_backstage"),
         ("east;e", "mem_backstage", "mem_studio"),
         ("west;w", "mem_studio", "mem_backstage"),
+        # Hotel south of Beale Street
+        ("south;s", "mem_beale", "mem_hotel"),
+        ("north;n", "mem_hotel", "mem_beale"),
     ],
 }
 

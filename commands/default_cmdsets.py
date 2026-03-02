@@ -32,6 +32,18 @@ from commands.manager import CmdHire, CmdFire, CmdManagerPromo, CmdManagerInterf
 # Economy
 from commands.economy import CmdBalance, CmdBuy, CmdSideJob
 
+# Lodging
+from commands.lodging import CmdRest, CmdBoard, CmdPost, CmdBuyHouse, CmdGoHome, CmdUpgrade
+
+# Brawl
+from commands.brawl import CmdBrawl
+
+# Character selection / creation
+from commands.charselect import CmdCharSelect, CmdCharCreate
+
+# System overrides
+from commands.command import CmdNoMatch, CmdNoInput
+
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -87,8 +99,27 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdBuy())
         self.add(CmdSideJob())
 
+        # Lodging
+        self.add(CmdRest())
+        self.add(CmdBoard())
+        self.add(CmdPost())
+        self.add(CmdBuyHouse())
+        self.add(CmdGoHome())
+        self.add(CmdUpgrade())
+
+        # Brawl
+        self.add(CmdBrawl())
+
+        # Character management
+        self.add(CmdCharSelect())
+        self.add(CmdCharCreate())
+
         # Map (ASCII ingame map from compass exits)
         self.add(CmdMap())
+
+        # System overrides
+        self.add(CmdNoMatch())
+        self.add(CmdNoInput())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):

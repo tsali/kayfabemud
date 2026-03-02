@@ -17,7 +17,7 @@ The shared secret password is BRIDGE_PASSWORD below. It must match
 BBS_BRIDGE_PASSWORD in both live and dev settings.py.
 
 Evennia 5.x login response strings (from testing):
-  Banner ends with: "look will re-show this screen."
+  Banner ends with: "Enter help for more info."
   Connect success:  "You become"
   Connect failure:  "Username and/or password is incorrect."
   Create confirm:   "[Y]/N?"
@@ -28,6 +28,7 @@ import asyncio
 import logging
 import re
 import sys
+import textwrap
 
 BRIDGE_PASSWORD = "pepsicola_bbs_secret_2026"
 
@@ -115,35 +116,236 @@ async def read_until_any(reader: asyncio.StreamReader, patterns: list, timeout: 
                 return raw_buf, p
 
 
+# UTF-8 sequences that display as garbled characters on CP437/ANSI terminals.
+# Replace with ASCII equivalents before sending to BBS client.
+UNICODE_TO_ASCII = [
+    (b"\xe2\x80\x94", b"--"),   # em dash
+    (b"\xe2\x80\x93", b"-"),    # en dash
+    (b"\xe2\x80\x98", b"'"),    # left single quote
+    (b"\xe2\x80\x99", b"'"),    # right single quote
+    (b"\xe2\x80\x9c", b'"'),    # left double quote
+    (b"\xe2\x80\x9d", b'"'),    # right double quote
+    (b"\xe2\x80\xa6", b"..."),  # ellipsis
+    (b"\xe2\x80\xa2", b"*"),    # bullet
+    (b"\xc2\xa0", b" "),        # non-breaking space
+]
+
+
+def transliterate_for_bbs(data: bytes) -> bytes:
+    """Replace common UTF-8 characters with ASCII for BBS terminals."""
+    for utf8_seq, ascii_rep in UNICODE_TO_ASCII:
+        data = data.replace(utf8_seq, ascii_rep)
+    return data
+
+
+# Regex to match ANSI escape sequences (for word-wrap width calculation)
+_RE_ANSI = re.compile(rb"\x1b\[[^a-zA-Z]*[a-zA-Z]")
+
+
+def wordwrap_ansi(data: bytes, width: int = 78) -> bytes:
+    """
+    Word-wrap text at `width` visible columns, preserving ANSI codes.
+
+    Splits on existing newlines, then wraps each line. ANSI escape
+    sequences don't count toward visible width.
+    """
+    lines = data.split(b"\r\n")
+    out = []
+    for line in lines:
+        # Measure visible length (strip ANSI for counting)
+        visible = _RE_ANSI.sub(b"", line)
+        if len(visible) <= width:
+            out.append(line)
+            continue
+
+        # Need to wrap this line — walk through preserving ANSI codes
+        result_lines = []
+        current = bytearray()
+        vis_len = 0
+        last_space_pos = -1  # position in current where last space was
+        last_space_vis = 0
+
+        i = 0
+        while i < len(line):
+            # Check for ANSI sequence
+            if line[i:i+1] == b"\x1b" and i + 1 < len(line) and line[i+1:i+2] == b"[":
+                # Find end of ANSI sequence
+                j = i + 2
+                while j < len(line) and not (0x41 <= line[j] <= 0x5A or 0x61 <= line[j] <= 0x7A):
+                    j += 1
+                if j < len(line):
+                    j += 1  # include the final letter
+                current.extend(line[i:j])
+                i = j
+                continue
+
+            byte = line[i:i+1]
+            if byte == b" ":
+                last_space_pos = len(current)
+                last_space_vis = vis_len
+
+            current.extend(byte)
+            vis_len += 1
+            i += 1
+
+            if vis_len >= width:
+                if last_space_pos > 0:
+                    # Break at last space
+                    result_lines.append(bytes(current[:last_space_pos]))
+                    current = bytearray(current[last_space_pos + 1:])
+                    vis_len = vis_len - last_space_vis - 1
+                else:
+                    # No space found — hard break
+                    result_lines.append(bytes(current))
+                    current = bytearray()
+                    vis_len = 0
+                last_space_pos = -1
+                last_space_vis = 0
+
+        if current:
+            result_lines.append(bytes(current))
+        out.extend(result_lines)
+
+    return b"\r\n".join(out)
+
+
+def process_iac_from_server(data: bytes):
+    """
+    Process Telnet IAC sequences from Evennia.
+
+    Returns (clean_data, responses):
+      - clean_data: bytes with IAC stripped (safe to send to BBS client)
+      - responses: bytes to send back to Evennia (IAC replies)
+
+    For each IAC WILL X  → reply IAC DONT X (we don't want server features)
+    For each IAC DO X    → reply IAC WONT X (we can't do client features)
+    Exception: IAC DO SGA (Suppress Go-Ahead) → reply IAC WILL SGA (standard)
+    """
+    clean = bytearray()
+    replies = bytearray()
+    IAC, WILL, WONT, DO, DONT = 0xFF, 0xFB, 0xFC, 0xFD, 0xFE
+    SGA = 0x03  # Suppress Go-Ahead
+
+    i = 0
+    while i < len(data):
+        if data[i] == IAC and i + 1 < len(data):
+            cmd = data[i + 1]
+            if cmd in (WILL, WONT, DO, DONT) and i + 2 < len(data):
+                opt = data[i + 2]
+                if cmd == WILL:
+                    # Server offers feature — decline
+                    replies.extend([IAC, DONT, opt])
+                elif cmd == DO:
+                    if opt == SGA:
+                        # Accept Suppress Go-Ahead (standard for MUDs)
+                        replies.extend([IAC, WILL, opt])
+                    else:
+                        # Server requests feature — refuse
+                        replies.extend([IAC, WONT, opt])
+                # WONT/DONT are informational, no reply needed
+                i += 3
+            elif cmd == 0xFA:
+                # Sub-negotiation: IAC SB ... IAC SE — skip entirely
+                end = data.find(b"\xff\xf0", i + 2)
+                i = end + 2 if end != -1 else len(data)
+            elif cmd == IAC:
+                # Escaped 0xFF
+                clean.append(0xFF)
+                i += 2
+            else:
+                # Other 2-byte IAC commands (GA, NOP, etc.) — skip
+                i += 2
+        else:
+            clean.append(data[i])
+            i += 1
+
+    return bytes(clean), bytes(replies)
+
+
 async def bridge_bidirectional(
     bbs_reader: asyncio.StreamReader,
     bbs_writer: asyncio.StreamWriter,
     mud_reader: asyncio.StreamReader,
     mud_writer: asyncio.StreamWriter,
 ):
-    """Forward data between BBS client and MUD server bidirectionally."""
+    """
+    Forward data between BBS client and MUD server bidirectionally.
 
-    async def forward(src: asyncio.StreamReader, dst: asyncio.StreamWriter, label: str):
+    mud→bbs: Strip IAC sequences, send negotiation replies back to Evennia.
+    bbs→mud: Echo input back to BBS user, normalize \\r to \\r\\n.
+    """
+
+    async def mud_to_bbs():
+        """Forward Evennia output to BBS, handling telnet negotiation."""
         try:
             while True:
-                data = await src.read(4096)
+                data = await mud_reader.read(4096)
                 if not data:
                     break
-                dst.write(data)
-                await dst.drain()
+                clean, replies = process_iac_from_server(data)
+                if replies:
+                    mud_writer.write(replies)
+                    await mud_writer.drain()
+                if clean:
+                    bbs_writer.write(wordwrap_ansi(transliterate_for_bbs(clean)))
+                    await bbs_writer.drain()
         except (ConnectionResetError, BrokenPipeError, asyncio.IncompleteReadError):
             pass
         except Exception as e:
-            log.debug(f"{label} forward error: {e}")
+            log.debug(f"mud→bbs forward error: {e}")
         finally:
             try:
-                dst.close()
+                bbs_writer.close()
+            except Exception:
+                pass
+
+    async def bbs_to_mud():
+        """
+        Forward BBS input to Evennia with line buffering.
+
+        Buffers keystrokes locally, handles backspace/delete, echoes each
+        character back to the BBS user, and only sends the completed line
+        to Evennia when Enter is pressed. This prevents garbled input from
+        partial edits reaching Evennia.
+        """
+        line_buf = bytearray()
+        try:
+            while True:
+                data = await bbs_reader.read(4096)
+                if not data:
+                    break
+                for byte in data:
+                    if byte in (0x08, 0x7F):
+                        # Backspace / Delete — remove last char from buffer
+                        if line_buf:
+                            line_buf.pop()
+                            # Echo: BS + space + BS (erase character on screen)
+                            bbs_writer.write(b"\x08 \x08")
+                    elif byte in (0x0D, 0x0A):
+                        # Enter — send buffered line to Evennia
+                        bbs_writer.write(b"\r\n")
+                        mud_writer.write(bytes(line_buf) + b"\r\n")
+                        await mud_writer.drain()
+                        line_buf.clear()
+                    elif 0x20 <= byte <= 0x7E:
+                        # Printable ASCII — buffer and echo
+                        line_buf.append(byte)
+                        bbs_writer.write(bytes([byte]))
+                    # else: ignore control chars
+                await bbs_writer.drain()
+        except (ConnectionResetError, BrokenPipeError, asyncio.IncompleteReadError):
+            pass
+        except Exception as e:
+            log.debug(f"bbs→mud forward error: {e}")
+        finally:
+            try:
+                mud_writer.close()
             except Exception:
                 pass
 
     await asyncio.gather(
-        forward(bbs_reader, mud_writer, "bbs→mud"),
-        forward(mud_reader, bbs_writer, "mud→bbs"),
+        bbs_to_mud(),
+        mud_to_bbs(),
         return_exceptions=True,
     )
 
@@ -208,8 +410,9 @@ async def handle_connection(
     # Create: create <user> <pass>   → "[Y]/N?" prompt → Y → silent → then connect
 
     try:
-        # Wait for banner to finish (pattern at end of Evennia 5.x welcome text)
-        await read_until_pattern(mud_reader, "look will re-show", timeout=15.0)
+        # Wait for banner to finish (pattern at end of connect screen)
+        # Kayfabe banner ends with "Enter help for more info." then a line of ===
+        await read_until_pattern(mud_reader, "help for more info", timeout=15.0)
         log.debug(f"Banner received for {bbs_username!r}")
 
         connect_cmd = f"connect {bbs_username} {BRIDGE_PASSWORD}\r\n"
@@ -229,7 +432,33 @@ async def handle_connection(
         if matched == "You become":
             # Existing account — already logged in
             log.info(f"Existing account login OK for {bbs_username!r}")
-            bbs_writer.write(resp_raw)
+            # Drain any remaining puppet output (room desc, prompt, etc.)
+            # that Evennia sends after "You become". Give it up to 2s.
+            extra_raw = b""
+            try:
+                while True:
+                    chunk = await asyncio.wait_for(mud_reader.read(4096), timeout=0.5)
+                    if not chunk:
+                        break
+                    extra_raw += chunk
+            except asyncio.TimeoutError:
+                pass
+            full_raw = resp_raw + extra_raw
+            clean, replies = process_iac_from_server(full_raw)
+            if replies:
+                mud_writer.write(replies)
+                await mud_writer.drain()
+            # Clear screen, then send only from the KAYFABE banner onward.
+            # The full_raw may contain stale output from the previous session
+            # that Evennia replays on puppet (room desc, etc).
+            clean_text = transliterate_for_bbs(clean)
+            # Find the KAYFABE banner start
+            banner_marker = b"*** KAYFABE"
+            banner_pos = clean_text.find(banner_marker)
+            if banner_pos > 0:
+                clean_text = clean_text[banner_pos:]
+            # Clear screen (ANSI ESC[2J + ESC[H) then show clean output
+            bbs_writer.write(b"\x1b[2J\x1b[H" + wordwrap_ansi(clean_text))
             await bbs_writer.drain()
 
         else:
@@ -252,7 +481,12 @@ async def handle_connection(
             login_raw = await read_until_pattern(mud_reader, "You become", timeout=10.0)
             login_text = strip_ansi_iac(login_raw)
             log.info(f"Account created + connected for {bbs_username!r}: {login_text[:80]!r}")
-            bbs_writer.write(login_raw)
+            clean, replies = process_iac_from_server(login_raw)
+            if replies:
+                mud_writer.write(replies)
+                await mud_writer.drain()
+            # Clear screen for new account too
+            bbs_writer.write(b"\x1b[2J\x1b[H" + transliterate_for_bbs(clean))
             await bbs_writer.drain()
 
     except (asyncio.TimeoutError, ConnectionError) as e:

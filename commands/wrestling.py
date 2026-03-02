@@ -13,6 +13,7 @@ card              — show tonight's match card (who's in the building)
 import random
 from evennia.commands.command import Command
 from evennia.utils.create import create_script
+from commands.command import pause_then_look
 
 
 class CmdWrestle(Command):
@@ -132,6 +133,10 @@ class CmdWork(Command):
             caller.msg("The match is over.")
             return
 
+        if script.db.pending_pin:
+            caller.msg("|rYou're being pinned! Type |wkickout|r to kick out!|n")
+            return
+
         from world.moves import MOVES, get_moves_for_phase
 
         phase = script.current_phase()
@@ -167,12 +172,14 @@ class CmdWork(Command):
 
         # Execute
         success, damage, msg = script.execute_move(caller, move_data, is_player_a=True)
-        caller.msg(f"\n{msg}")
+        caller.msg(f"\n|w>> YOUR OFFENSE:|n {msg}")
         if caller.location:
             caller.location.msg_contents(f"\n{msg}", exclude=[caller])
 
-        # Check for phase advance
+        # Check for phase advance and show status
         _check_advance(script, caller)
+        if not script.db.match_over:
+            script._show_status(caller)
 
 
 class CmdSell(Command):
@@ -203,13 +210,22 @@ class CmdSell(Command):
             caller.msg("The match is over.")
             return
 
+        if script.db.pending_pin:
+            caller.msg("|rYou're being pinned! Type |wkickout|r to kick out!|n")
+            return
+
+        npc = script.db.wrestler_b
+        npc_name = npc.key if npc else "Your opponent"
         msg = script.do_sell(is_player_a=True)
-        caller.msg(f"\n{msg}")
-        caller.msg("|xYou sell it like death. Good work.|n")
+        caller.msg(f"\n|r>> YOU SELL:|n You let {npc_name} take control --")
+        caller.msg(f"{msg}")
+        caller.msg("|xGood selling builds crowd heat and star ratings.|n")
         if caller.location:
             caller.location.msg_contents(f"\n{msg}", exclude=[caller])
 
         _check_advance(script, caller)
+        if not script.db.match_over:
+            script._show_status(caller)
 
 
 class CmdComeback(Command):
@@ -246,13 +262,15 @@ class CmdComeback(Command):
             return
 
         success, msg = script.do_comeback(is_player_a=True)
-        caller.msg(f"\n{msg}")
+        caller.msg(f"\n|g>> COMEBACK!|n {msg}")
         if caller.location:
             caller.location.msg_contents(f"\n{msg}", exclude=[caller])
 
         if success and phase == "comeback":
             # Advance to finish
             script.advance_phase()
+        elif not script.db.match_over:
+            script._show_status(caller)
 
 
 class CmdFinish(Command):
@@ -299,6 +317,8 @@ class CmdFinish(Command):
         elif phase == "comeback":
             # Failed finisher in comeback — advance to finish phase
             script.advance_phase()
+        elif not script.db.match_over:
+            script._show_status(caller)
 
 
 class CmdKickout(Command):
@@ -308,8 +328,9 @@ class CmdKickout(Command):
     Usage:
       kickout
 
-    When the opponent attempts a pin, try to kick out.
+    When the opponent has you pinned, try to kick out.
     Uses Toughness. Harder when you're beaten down.
+    Only available when you're being pinned.
     """
 
     key = "kickout"
@@ -321,14 +342,35 @@ class CmdKickout(Command):
         caller = self.caller
         scripts = caller.scripts.get("match_script")
         if not scripts:
-            caller.msg("You're not in a match. Nothing to kick out of.")
+            caller.msg("You're not in a match.")
             return
         script = scripts[0]
+
+        if not script.db.pending_pin:
+            caller.msg("Nobody is pinning you right now.")
+            return
 
         success, msg = script.do_kickout(is_player_a=True)
         caller.msg(f"\n{msg}")
         if caller.location:
             caller.location.msg_contents(f"\n{msg}", exclude=[caller])
+
+        script.db.pending_pin = False
+
+        if not success:
+            # Failed kickout means the NPC wins
+            npc = script.db.wrestler_b
+            npc_name = npc.key if npc else "opponent"
+            finisher = npc.db.finisher_name if npc else "finisher"
+            caller.msg(
+                f"\n|r*** {npc_name} WINS with the {finisher}! ***|n"
+            )
+            script.db.match_over = True
+            script.db.winner = "b"
+            _end_match(script, caller)
+        else:
+            if not script.db.match_over:
+                script._show_status(caller)
 
 
 class CmdMoves(Command):
@@ -442,6 +484,7 @@ class CmdCard(Command):
             )
         caller.msg(f"\n|wAnyone can challenge anyone.|n")
         caller.msg(f"|wType 'wrestle <name>' to start a match.|n")
+        pause_then_look(caller)
 
 
 class CmdHope(Command):
@@ -476,20 +519,24 @@ class CmdHope(Command):
         cha = caller.get_stat("cha")
         success, roll, total, margin = stat_check(cha, 13)
 
+        npc = script.db.wrestler_b
+        npc_name = npc.key if npc else "your opponent"
         if success:
             script.db.crowd_heat = min(100, script.db.crowd_heat + 4)
             script.db.a_momentum += 2
             caller.msg(
-                f"\n|y{caller.key} fires back with a flurry! The crowd stirs--\n"
-                f"but they get cut off! Not yet... but the crowd FELT that!|n"
+                f"\n|y>> HOPE SPOT:|n You fire back with a flurry! The crowd stirs--\n"
+                f"but {npc_name} cuts you off! Not yet... but the crowd FELT that!"
             )
         else:
             caller.msg(
-                f"\n|x{caller.key} tries to fight back but gets shut down immediately.|n"
+                f"\n|x>> HOPE SPOT:|n You try to fight back but {npc_name} shuts you down."
             )
 
         script.db.move_count += 1
         _check_advance(script, caller)
+        if not script.db.match_over:
+            script._show_status(caller)
 
 
 def _check_advance(script, caller):
@@ -511,21 +558,36 @@ def _check_advance(script, caller):
         if script.db.phase_index < 4:  # don't go past finish
             script.advance_phase()
 
-    # Auto-end if someone's health hits 0 in finish phase
+    # Finish phase: check for pin opportunities
     if phase == "finish":
         if script.db.b_health <= 0:
-            # NPC is done, auto-finisher opportunity
+            # NPC is done, prompt player to finish
+            npc = script.db.wrestler_b
+            npc_name = npc.key if npc else "Your opponent"
             caller.msg(
-                f"\n|Y{script.db.wrestler_b.key} is barely standing! "
-                f"NOW is the time -- hit your finisher!|n"
+                f"\n|Y{npc_name} is barely standing! "
+                f"NOW is the time -- type |wfinish|Y to hit your finisher!|n"
             )
-        elif script.db.a_health <= 0:
-            # Player is down — NPC finishes
-            _npc_finishes(script, caller)
+        elif script.db.a_health <= 30 and not script.db.pending_pin:
+            # NPC goes for a pin attempt -- player must kickout
+            npc = script.db.wrestler_b
+            npc_name = npc.key if npc else "opponent"
+            finisher = npc.db.finisher_name if npc else "finishing move"
+            script.db.pending_pin = True
+            caller.msg(
+                f"\n|r{npc_name} hits the {finisher}! COVER!\n"
+                f"ONE... TWO...\n"
+                f"Type |wkickout|r NOW to kick out!|n"
+            )
+            if caller.location:
+                caller.location.msg_contents(
+                    f"\n|r{npc_name} goes for the pin on {caller.key}!|n",
+                    exclude=[caller],
+                )
 
 
 def _npc_finishes(script, caller):
-    """NPC hits their finisher on the player."""
+    """NPC hits their finisher on the player (no kickout chance)."""
     npc = script.db.wrestler_b
     if not npc:
         return
@@ -544,6 +606,7 @@ def _npc_finishes(script, caller):
 
     script.db.match_over = True
     script.db.winner = "b"
+    script.db.pending_pin = False
     _end_match(script, caller)
 
 

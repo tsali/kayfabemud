@@ -27,8 +27,7 @@ BACKYARD_TERRITORIES["bba"] = {
                 "A hand-spray-painted banner on a bedsheet reads: "
                 "'BBA — BAYOU BRAWLIN' — TONIGHT'. A cooler of Abita beer "
                 "sits in the bed of someone's truck. The sound of bodies "
-                "hitting plywood carries through the humid night air.\n\n"
-                "|wExits: |nsouth|w to the venue, |nnorth|w to the road.|n"
+                "hitting plywood carries through the humid night air."
             ),
         },
         {
@@ -46,8 +45,7 @@ BACKYARD_TERRITORIES["bba"] = {
                 "swamp people who want to see a fight. A single bare bulb "
                 "swings above the ring. Someone brought a camcorder but "
                 "the lens keeps fogging in the humidity.\n\n"
-                "Type |wcard|n to see tonight's lineup. |wwrestle <name>|n to get in the ring.\n\n"
-                "|wExits: |nnorth|w to the parking lot, |nwest|w to the locker room.|n"
+                "Type |wcard|n to see tonight's lineup. |wwrestle <name>|n to get in the ring."
             ),
         },
         {
@@ -61,8 +59,21 @@ BACKYARD_TERRITORIES["bba"] = {
                 "change behind blankets hung from the rafters.\n\n"
                 "The conditions are brutal but the competition is stiffer "
                 "than you'd expect. These boys hit hard and stiff — "
-                "Shreveport style doesn't believe in pulling punches.\n\n"
-                "|wExits: |neast|w back to the arena.|n"
+                "Shreveport style doesn't believe in pulling punches."
+            ),
+        },
+        {
+            "key": "bba_motel",
+            "name": "Bayou Motor Lodge",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("bba", "territory")],
+            "extras": {"inn_tier": 1, "rest_cost": 10, "rest_bonus": {}},
+            "desc": (
+                "A ramshackle motor lodge on the bayou road. Spanish moss "
+                "brushes the tin roof. The rooms have screen doors instead "
+                "of solid ones — mosquito nets are provided.\n\n"
+                "Ten bucks and you get a cot, a ceiling fan, and the sounds "
+                "of the swamp lulling you to sleep. Or keeping you awake."
             ),
         },
         {
@@ -89,6 +100,8 @@ BACKYARD_TERRITORIES["bba"] = {
         ("east;e", "bba_locker", "bba_venue"),
         ("north;n", "bba_parking", "bba_road"),
         ("south;s", "bba_road", "bba_parking"),
+        ("east;e", "bba_parking", "bba_motel"),
+        ("west;w", "bba_motel", "bba_parking"),
     ],
     "exit_descs": {
         ("bba_parking", "south"): "Through the barn doors you can see the converted wrestling venue — hay bales for seats, a ring built from lumber and telephone poles.",
@@ -122,8 +135,7 @@ BACKYARD_TERRITORIES["psc"] = {
                 "A posterboard sign duct-taped to a sawhorse reads: "
                 "'PSC WRESTLING — ADMISSION $5 — KIDS FREE'. A few dozen "
                 "cars sit in the lot. Someone's selling boiled peanuts from "
-                "the tailgate of a station wagon.\n\n"
-                "|wExits: |nsouth|w to the venue, |nnorth|w to the road.|n"
+                "the tailgate of a station wagon."
             ),
         },
         {
@@ -141,8 +153,7 @@ BACKYARD_TERRITORIES["psc"] = {
                 "studio wrestling. They know what good work looks like and "
                 "they expect it. National TV territory Georgia is just up "
                 "I-75, and scouts from TBS sometimes pass through Macon.\n\n"
-                "Type |wcard|n to see tonight's lineup. |wwrestle <name>|n to get in the ring.\n\n"
-                "|wExits: |nnorth|w to the parking lot, |nwest|w to the locker room.|n"
+                "Type |wcard|n to see tonight's lineup. |wwrestle <name>|n to get in the ring."
             ),
         },
         {
@@ -157,8 +168,21 @@ BACKYARD_TERRITORIES["psc"] = {
                 "table holds rolls of athletic tape and a first aid kit.\n\n"
                 "The boys here are talkers — PSC is a promo territory. "
                 "If you can work the mic, you'll get noticed. If you can't, "
-                "you'll spend every show in the opener.\n\n"
-                "|wExits: |neast|w back to the arena.|n"
+                "you'll spend every show in the opener."
+            ),
+        },
+        {
+            "key": "psc_motel",
+            "name": "Peach Tree Inn",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("psc", "territory")],
+            "extras": {"inn_tier": 1, "rest_cost": 10, "rest_bonus": {}},
+            "desc": (
+                "A small motel with peach-colored shutters across from the "
+                "Legion hall. The rooms are basic but clean — the owner is a "
+                "wrestling fan who gives the boys a deal.\n\n"
+                "A vending machine in the breezeway dispenses RC Cola and "
+                "peanut butter crackers. Southern hospitality at its finest."
             ),
         },
         {
@@ -185,6 +209,8 @@ BACKYARD_TERRITORIES["psc"] = {
         ("east;e", "psc_locker", "psc_venue"),
         ("north;n", "psc_parking", "psc_road"),
         ("south;s", "psc_road", "psc_parking"),
+        ("east;e", "psc_parking", "psc_motel"),
+        ("west;w", "psc_motel", "psc_parking"),
     ],
     "exit_descs": {
         ("psc_parking", "south"): "Through the door you can see the American Legion hall — a decent ring bought from a defunct GCW show.",
@@ -219,8 +245,7 @@ BACKYARD_TERRITORIES["gsg"] = {
                 "makes this the most competitive backyard fed in the game. "
                 "WWF scouts have been known to drive down from the city. "
                 "A hand-lettered sign in the window reads: 'GSG — LIVE "
-                "WRESTLING — FRIDAY NIGHTS'.\n\n"
-                "|wExits: |nsouth|w to the venue, |nnorth|w to the road.|n"
+                "WRESTLING — FRIDAY NIGHTS'."
             ),
         },
         {
@@ -239,8 +264,7 @@ BACKYARD_TERRITORIES["gsg"] = {
                 "too long. A VHS camera on a tripod captures every show. "
                 "Larry Sharpton from the Beast Works sometimes sends a "
                 "student to scout.\n\n"
-                "Type |wcard|n to see tonight's lineup. |wwrestle <name>|n to get in the ring.\n\n"
-                "|wExits: |nnorth|w to the parking lot, |nwest|w to the locker room.|n"
+                "Type |wcard|n to see tonight's lineup. |wwrestle <name>|n to get in the ring."
             ),
         },
         {
@@ -255,8 +279,21 @@ BACKYARD_TERRITORIES["gsg"] = {
                 "Competition here is cutthroat — everyone knows the Beast "
                 "Works and WWF are close. Wrestlers sabotage each other's "
                 "gear, steal each other's spots, and politic constantly. "
-                "Welcome to the Northeast.\n\n"
-                "|wExits: |neast|w back to the arena.|n"
+                "Welcome to the Northeast."
+            ),
+        },
+        {
+            "key": "gsg_motel",
+            "name": "Garden State Motor Inn",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("gsg", "territory")],
+            "extras": {"inn_tier": 1, "rest_cost": 10, "rest_bonus": {}},
+            "desc": (
+                "A no-frills motor inn on Route 55. The Jersey Turnpike "
+                "rumbles in the distance. The rooms are small but the beds "
+                "are real and there's a lock on the door.\n\n"
+                "The owner doesn't ask why you're bruised. The continental "
+                "breakfast is a pot of burnt coffee and day-old bagels."
             ),
         },
         {
@@ -283,6 +320,8 @@ BACKYARD_TERRITORIES["gsg"] = {
         ("east;e", "gsg_locker", "gsg_venue"),
         ("north;n", "gsg_parking", "gsg_road"),
         ("south;s", "gsg_road", "gsg_parking"),
+        ("east;e", "gsg_parking", "gsg_motel"),
+        ("west;w", "gsg_motel", "gsg_parking"),
     ],
     "exit_descs": {
         ("gsg_parking", "south"): "Through the storefront window you can see the gutted retail space — a ring jammed into the center, fluorescent lights buzzing.",
@@ -318,8 +357,7 @@ BACKYARD_TERRITORIES["lsu"] = {
                 "NO RULES, NO SCRIPT'. The Lone Star Underground has no "
                 "training school pipeline — you either get spotted by "
                 "World Class territory or you sink. Sink or swim, Texas "
-                "style.\n\n"
-                "|wExits: |nsouth|w to the venue, |nnorth|w to the road.|n"
+                "style."
             ),
         },
         {
@@ -337,8 +375,7 @@ BACKYARD_TERRITORIES["lsu"] = {
                 "beer at heels and chant for faces. World Class territory "
                 "in Dallas is just 30 miles east, and the Von Adler family "
                 "has eyes everywhere.\n\n"
-                "Type |wcard|n to see tonight's lineup. |wwrestle <name>|n to get in the ring.\n\n"
-                "|wExits: |nnorth|w to the parking lot, |nwest|w to the locker room.|n"
+                "Type |wcard|n to see tonight's lineup. |wwrestle <name>|n to get in the ring."
             ),
         },
         {
@@ -354,8 +391,21 @@ BACKYARD_TERRITORIES["lsu"] = {
                 "No training school feeds into LSU. If you're here, you "
                 "learned on your own or from someone's backyard. The good "
                 "news: World Class territory scouts regularly. The bad "
-                "news: they only want the best.\n\n"
-                "|wExits: |neast|w back to the arena.|n"
+                "news: they only want the best."
+            ),
+        },
+        {
+            "key": "lsu_motel",
+            "name": "Stockyard Motor Court",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("lsu", "territory")],
+            "extras": {"inn_tier": 1, "rest_cost": 10, "rest_bonus": {}},
+            "desc": (
+                "A motor court behind the Stockyards. The rooms have Western "
+                "kitsch — longhorn lamps, cowhide bedspreads. The walls are "
+                "thin enough to hear the cattle being moved at dawn.\n\n"
+                "Ten dollars a night, cash only. The ice machine dispenses "
+                "lukewarm water. But it beats sleeping in the truck bed."
             ),
         },
         {
@@ -382,6 +432,8 @@ BACKYARD_TERRITORIES["lsu"] = {
         ("east;e", "lsu_locker", "lsu_venue"),
         ("north;n", "lsu_parking", "lsu_road"),
         ("south;s", "lsu_road", "lsu_parking"),
+        ("east;e", "lsu_parking", "lsu_motel"),
+        ("west;w", "lsu_motel", "lsu_parking"),
     ],
     "exit_descs": {
         ("lsu_parking", "south"): "Through the wide doors you can see the converted livestock auction barn — the ring sits where cattle used to be sold.",

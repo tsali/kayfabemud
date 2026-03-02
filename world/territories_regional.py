@@ -94,6 +94,20 @@ REGIONAL_TERRITORIES["midsouth"] = {
             ),
         },
         {
+            "key": "ms_hotel",
+            "name": "Shreveport Motor Hotel",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("midsouth", "territory")],
+            "extras": {"inn_tier": 3, "rest_cost": 75, "rest_bonus": {"all": 2}},
+            "desc": (
+                "A motor hotel on a Shreveport back street. Clean rooms with "
+                "real mattresses and air conditioning that fights the Louisiana "
+                "humidity. The bar downstairs serves po'boys until midnight.\n\n"
+                "The traveling wrestlers keep this place in business. Saturday "
+                "nights after the show, the parking lot fills with rental cars."
+            ),
+        },
+        {
             "key": "ms_travel",
             "name": "I-20 Interchange",
             "typeclass": "typeclasses.rooms.TravelHub",
@@ -119,6 +133,8 @@ REGIONAL_TERRITORIES["midsouth"] = {
         ("north;n", "ms_backstage", "ms_arena"),
         ("west;w", "ms_backstage", "ms_office"),
         ("east;e", "ms_office", "ms_backstage"),
+        ("south;s", "ms_bar", "ms_hotel"),
+        ("north;n", "ms_hotel", "ms_bar"),
     ],
 }
 
@@ -224,6 +240,21 @@ REGIONAL_TERRITORIES["midatlantic"] = {
             ),
         },
         {
+            "key": "ma_hotel",
+            "name": "Charlotte Plaza Hotel",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("midatlantic", "territory")],
+            "extras": {"inn_tier": 3, "rest_cost": 75, "rest_bonus": {"all": 2}},
+            "desc": (
+                "A respectable hotel near the Greensboro Coliseum. The Horsemen "
+                "have their own floor reserved. Everyone else takes what's "
+                "available. The rooms are comfortable and the lobby bar stays "
+                "open late.\n\n"
+                "This is NWA country — the hotel staff treats wrestlers like "
+                "visiting dignitaries."
+            ),
+        },
+        {
             "key": "ma_travel",
             "name": "I-85 / I-77 Interchange",
             "typeclass": "typeclasses.rooms.TravelHub",
@@ -251,6 +282,8 @@ REGIONAL_TERRITORIES["midatlantic"] = {
         ("east;e", "ma_office", "ma_backstage"),
         ("east;e", "ma_backstage", "ma_studio"),
         ("west;w", "ma_studio", "ma_backstage"),
+        ("south;s", "ma_bar", "ma_hotel"),
+        ("north;n", "ma_hotel", "ma_bar"),
     ],
 }
 
@@ -342,6 +375,20 @@ REGIONAL_TERRITORIES["florida"] = {
             ),
         },
         {
+            "key": "fl_hotel",
+            "name": "Tampa Bay Inn",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("florida", "territory")],
+            "extras": {"inn_tier": 3, "rest_cost": 75, "rest_bonus": {"all": 2}},
+            "desc": (
+                "A mid-range hotel near Ybor City. The rooms have balconies "
+                "overlooking the Tampa Bay waterfront. Ceiling fans turn lazily "
+                "above king-size beds.\n\n"
+                "Florida territory wrestlers stay here between shows. The "
+                "hot tub in the courtyard sees a lot of ice-bath therapy."
+            ),
+        },
+        {
             "key": "fl_travel",
             "name": "I-4 / I-75 Interchange",
             "typeclass": "typeclasses.rooms.TravelHub",
@@ -366,6 +413,8 @@ REGIONAL_TERRITORIES["florida"] = {
         ("north;n", "fl_backstage", "fl_arena"),
         ("west;w", "fl_backstage", "fl_office"),
         ("east;e", "fl_office", "fl_backstage"),
+        ("south;s", "fl_bar", "fl_hotel"),
+        ("north;n", "fl_hotel", "fl_bar"),
     ],
 }
 
@@ -455,6 +504,21 @@ REGIONAL_TERRITORIES["georgia"] = {
             ),
         },
         {
+            "key": "ga_hotel",
+            "name": "CNN Center Hotel",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("georgia", "territory")],
+            "extras": {"inn_tier": 3, "rest_cost": 75, "rest_bonus": {"all": 2}},
+            "desc": (
+                "A hotel connected to the CNN Center complex. Modern rooms "
+                "with cable TV — including TBS, naturally. The lobby bar "
+                "serves until 1 AM.\n\n"
+                "Being this close to the studio has its advantages — you "
+                "might bump into Jim Barnett in the elevator and pitch an "
+                "angle over coffee."
+            ),
+        },
+        {
             "key": "ga_travel",
             "name": "I-75 / I-85 Interchange",
             "typeclass": "typeclasses.rooms.TravelHub",
@@ -478,6 +542,8 @@ REGIONAL_TERRITORIES["georgia"] = {
         ("north;n", "ga_backstage", "ga_arena"),
         ("west;w", "ga_backstage", "ga_office"),
         ("east;e", "ga_office", "ga_backstage"),
+        ("south;s", "ga_studio", "ga_hotel"),
+        ("north;n", "ga_hotel", "ga_studio"),
     ],
 }
 
@@ -568,6 +634,20 @@ REGIONAL_TERRITORIES["wccw"] = {
             ),
         },
         {
+            "key": "wc_hotel",
+            "name": "Dallas Motor Hotel",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("wccw", "territory")],
+            "extras": {"inn_tier": 3, "rest_cost": 75, "rest_bonus": {"all": 2}},
+            "desc": (
+                "A mid-range hotel near the Sportatorium. Texas-sized rooms "
+                "with king beds and decent AC. A Whataburger across the "
+                "street provides late-night sustenance.\n\n"
+                "The Von Adler boys don't stay here — they go home to the "
+                "ranch. Everyone else makes do."
+            ),
+        },
+        {
             "key": "wc_travel",
             "name": "I-35 / I-30 Interchange",
             "typeclass": "typeclasses.rooms.TravelHub",
@@ -592,6 +672,8 @@ REGIONAL_TERRITORIES["wccw"] = {
         ("north;n", "wc_backstage", "wc_arena"),
         ("west;w", "wc_backstage", "wc_office"),
         ("east;e", "wc_office", "wc_backstage"),
+        ("south;s", "wc_ranch", "wc_hotel"),
+        ("north;n", "wc_hotel", "wc_ranch"),
     ],
 }
 
@@ -698,6 +780,20 @@ REGIONAL_TERRITORIES["awa"] = {
             ),
         },
         {
+            "key": "awa_hotel",
+            "name": "Minneapolis Auditorium Hotel",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("awa", "territory")],
+            "extras": {"inn_tier": 3, "rest_cost": 75, "rest_bonus": {"all": 2}},
+            "desc": (
+                "A solid mid-range hotel near the Auditorium. The rooms "
+                "are clean, the beds firm, and the continental breakfast "
+                "generous. Midwest hospitality in action.\n\n"
+                "Vernon expects his wrestlers to be well-rested and "
+                "presentable. This hotel meets his standards."
+            ),
+        },
+        {
             "key": "awa_travel",
             "name": "I-94 / I-35 Interchange",
             "typeclass": "typeclasses.rooms.TravelHub",
@@ -724,6 +820,8 @@ REGIONAL_TERRITORIES["awa"] = {
         ("east;e", "awa_office", "awa_backstage"),
         ("east;e", "awa_backstage", "awa_farm"),
         ("west;w", "awa_farm", "awa_backstage"),
+        ("south;s", "awa_bar", "awa_hotel"),
+        ("north;n", "awa_hotel", "awa_bar"),
     ],
 }
 
@@ -801,6 +899,21 @@ REGIONAL_TERRITORIES["stampede"] = {
             ),
         },
         {
+            "key": "stm_hotel",
+            "name": "Calgary Motor Inn",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("stampede", "territory")],
+            "extras": {"inn_tier": 3, "rest_cost": 75, "rest_bonus": {"all": 2}},
+            "desc": (
+                "A motor inn near the Pavilion. The Calgary cold seeps through "
+                "the walls but the radiator works overtime. Extra blankets are "
+                "standard issue.\n\n"
+                "Foreign wrestlers on excursion stay here for months at a time. "
+                "The owners have learned a few words of Japanese from their "
+                "regular guests."
+            ),
+        },
+        {
             "key": "stm_travel",
             "name": "Trans-Canada Highway",
             "typeclass": "typeclasses.rooms.TravelHub",
@@ -824,6 +937,8 @@ REGIONAL_TERRITORIES["stampede"] = {
         ("north;n", "stm_backstage", "stm_arena"),
         ("west;w", "stm_backstage", "stm_office"),
         ("east;e", "stm_office", "stm_backstage"),
+        ("east;e", "stm_arena", "stm_hotel"),
+        ("west;w", "stm_hotel", "stm_arena"),
     ],
 }
 
@@ -916,6 +1031,20 @@ REGIONAL_TERRITORIES["pnw"] = {
             ),
         },
         {
+            "key": "pnw_hotel",
+            "name": "Portland Waterfront Inn",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("pnw", "territory")],
+            "extras": {"inn_tier": 3, "rest_cost": 75, "rest_bonus": {"all": 2}},
+            "desc": (
+                "A comfortable inn on the Portland waterfront. The sound of "
+                "rain on the windows is constant. The rooms have thick quilts "
+                "and working fireplaces.\n\n"
+                "Portland takes care of its wrestlers. The room rate is fair "
+                "and the owner keeps a pot of coffee on 24 hours."
+            ),
+        },
+        {
             "key": "pnw_travel",
             "name": "I-5 — Pacific Coast Highway",
             "typeclass": "typeclasses.rooms.TravelHub",
@@ -941,5 +1070,7 @@ REGIONAL_TERRITORIES["pnw"] = {
         ("north;n", "pnw_backstage", "pnw_arena"),
         ("west;w", "pnw_backstage", "pnw_office"),
         ("east;e", "pnw_office", "pnw_backstage"),
+        ("south;s", "pnw_bar", "pnw_hotel"),
+        ("north;n", "pnw_hotel", "pnw_bar"),
     ],
 }

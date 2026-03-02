@@ -91,6 +91,20 @@ SCHOOL_TERRITORIES["slaughterhouse"] = {
                 "|wType 'travel' to see available destinations.|n"
             ),
         },
+        {
+            "key": "slaught_motel",
+            "name": "Route 114 Motor Inn",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("slaughterhouse", "territory")],
+            "extras": {"inn_tier": 2, "rest_cost": 25, "rest_bonus": {"all": 1}},
+            "desc": (
+                "A budget motel on Route 114. New England winter seeps "
+                "through the single-pane windows. The heater clanks like a "
+                "body hitting canvas. At least the water's hot.\n\n"
+                "Kovalenko's students crash here between training sessions. "
+                "The beds are hard — almost as hard as the training."
+            ),
+        },
     ],
     "exits": [
         ("north;n", "slaught_entrance", "slaught_road"),
@@ -101,6 +115,8 @@ SCHOOL_TERRITORIES["slaughterhouse"] = {
         ("west;w", "slaught_ring", "slaught_floor"),
         ("west;w", "slaught_floor", "slaught_office"),
         ("east;e", "slaught_office", "slaught_floor"),
+        ("east;e", "slaught_entrance", "slaught_motel"),
+        ("west;w", "slaught_motel", "slaught_entrance"),
     ],
 }
 
@@ -176,6 +192,20 @@ SCHOOL_TERRITORIES["beast_works"] = {
                 "|wType 'travel' to see available destinations.|n"
             ),
         },
+        {
+            "key": "beast_motel",
+            "name": "Westville Budget Inn",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("beast_works", "territory")],
+            "extras": {"inn_tier": 2, "rest_cost": 25, "rest_bonus": {"all": 1}},
+            "desc": (
+                "A budget inn in Westville, just down the road from the Beast "
+                "Works. The rooms are cramped but functional. Sharpton's students "
+                "share doubles to save money.\n\n"
+                "The front desk has a bowl of aspirin by the register. They know "
+                "their clientele."
+            ),
+        },
     ],
     "exits": [
         ("north;n", "beast_entrance", "beast_road"),
@@ -184,6 +214,8 @@ SCHOOL_TERRITORIES["beast_works"] = {
         ("north;n", "beast_floor", "beast_entrance"),
         ("east;e", "beast_floor", "beast_ring"),
         ("west;w", "beast_ring", "beast_floor"),
+        ("east;e", "beast_entrance", "beast_motel"),
+        ("west;w", "beast_motel", "beast_entrance"),
     ],
 }
 
@@ -258,6 +290,20 @@ SCHOOL_TERRITORIES["conservatory"] = {
                 "|wType 'travel' to see available destinations.|n"
             ),
         },
+        {
+            "key": "cons_motel",
+            "name": "Ocala Country Inn",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("conservatory", "territory")],
+            "extras": {"inn_tier": 2, "rest_cost": 25, "rest_bonus": {"all": 1}},
+            "desc": (
+                "A country inn on the road outside Ocala. Horses graze in the "
+                "pasture across the street. The rooms smell like hay and "
+                "wildflowers. It's almost peaceful.\n\n"
+                "Dory Funk's students stay here when they can afford it. The "
+                "alternative is sleeping on the ranch, which isn't bad either."
+            ),
+        },
     ],
     "exits": [
         ("north;n", "cons_entrance", "cons_road"),
@@ -266,6 +312,8 @@ SCHOOL_TERRITORIES["conservatory"] = {
         ("north;n", "cons_floor", "cons_entrance"),
         ("east;e", "cons_floor", "cons_ring"),
         ("west;w", "cons_ring", "cons_floor"),
+        ("east;e", "cons_entrance", "cons_motel"),
+        ("west;w", "cons_motel", "cons_entrance"),
     ],
 }
 
@@ -342,6 +390,20 @@ SCHOOL_TERRITORIES["dungeon_holds"] = {
                 "|wType 'travel' to see available destinations.|n"
             ),
         },
+        {
+            "key": "dung_motel",
+            "name": "Tampa Budget Suites",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("dungeon_holds", "territory")],
+            "extras": {"inn_tier": 2, "rest_cost": 25, "rest_bonus": {"all": 1}},
+            "desc": (
+                "A budget extended-stay near Dale Mabry Highway. The rooms "
+                "have kitchenettes with microwaves older than most of the "
+                "trainees. The pool hasn't been cleaned in weeks.\n\n"
+                "Malenko's students recover here between sessions, soaking "
+                "their wrenched joints in epsom salt baths."
+            ),
+        },
     ],
     "exits": [
         ("north;n", "dung_entrance", "dung_road"),
@@ -350,6 +412,8 @@ SCHOOL_TERRITORIES["dungeon_holds"] = {
         ("north;n", "dung_floor", "dung_entrance"),
         ("east;e", "dung_floor", "dung_ring"),
         ("west;w", "dung_ring", "dung_floor"),
+        ("east;e", "dung_entrance", "dung_motel"),
+        ("west;w", "dung_motel", "dung_entrance"),
     ],
 }
 
@@ -424,6 +488,21 @@ SCHOOL_TERRITORIES["proving_grounds"] = {
                 "|wType 'travel' to see available destinations.|n"
             ),
         },
+        {
+            "key": "prov_motel",
+            "name": "Eldon Motor Lodge",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("proving_grounds", "territory")],
+            "extras": {"inn_tier": 2, "rest_cost": 25, "rest_bonus": {"all": 1}},
+            "desc": (
+                "A small motor lodge in Eldon, Missouri. The Ozark hills "
+                "roll outside the window. A Bible and a Harley Reece "
+                "autographed photo sit on the nightstand.\n\n"
+                "Reece's students stay here when the academy dorms are full. "
+                "The owner gives a wrestler's discount — he's been a fan "
+                "since the NWA days."
+            ),
+        },
     ],
     "exits": [
         ("north;n", "prov_entrance", "prov_road"),
@@ -432,5 +511,7 @@ SCHOOL_TERRITORIES["proving_grounds"] = {
         ("north;n", "prov_floor", "prov_entrance"),
         ("east;e", "prov_floor", "prov_ring"),
         ("west;w", "prov_ring", "prov_floor"),
+        ("east;e", "prov_entrance", "prov_motel"),
+        ("west;w", "prov_motel", "prov_entrance"),
     ],
 }

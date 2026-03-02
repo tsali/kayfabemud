@@ -93,6 +93,7 @@ class MatchScript(DefaultScript):
         self.db.booked_winner = "a"  # player wins by default vs NPCs
         self.db.is_pvp = False
         self.db.star_breakdown = {}
+        self.db.pending_pin = False
 
     def setup_match(self, wrestler_a, wrestler_b, booked_winner="a"):
         """Initialize match participants."""
@@ -172,16 +173,18 @@ class MatchScript(DefaultScript):
         )
 
         phase = self.current_phase()
-        if phase == "opening":
-            viewer.msg("|wCommands: |cwork|n (execute a move), |csell|n (let opponent work)|n")
+        if self.db.pending_pin:
+            viewer.msg("|r>>> |wType |ckickout|w to kick out of the pin! |r<<<|n")
+        elif phase == "opening":
+            viewer.msg("|wYour move:|n |cwork|n (attack), |csell|n (let them work you)")
         elif phase == "heat":
-            viewer.msg("|wCommands: |cwork|n, |csell|n, |chope|n (brief comeback attempt)|n")
+            viewer.msg("|wYour move:|n |cwork|n (attack), |csell|n (take a beating), |chope|n (fight back briefly)")
         elif phase == "hope":
-            viewer.msg("|wCommands: |csell|n (get cut off), |cwork|n (sneak in a move)|n")
+            viewer.msg("|wYour move:|n |csell|n (get cut off), |cwork|n (sneak in a shot)")
         elif phase == "comeback":
-            viewer.msg("|wCommands: |cwork|n, |ccomeback|n (fire up!), |cfinish|n (go for the finisher)|n")
+            viewer.msg("|wYour move:|n |cwork|n (attack), |ccomeback|n (fire up!), |cfinish|n (hit your finisher)")
         elif phase == "finish":
-            viewer.msg("|wCommands: |cwork|n, |cfinish|n (attempt finisher), |ckickout|n (kick out of pin)|n")
+            viewer.msg("|wYour move:|n |cwork|n (attack), |cfinish|n (hit your finisher)")
 
     def execute_move(self, attacker, move_data, is_player_a=True):
         """
@@ -554,6 +557,71 @@ def _heat_bar(pct, width=20):
     else:
         color = "|x"
     return f"[{color}{'!' * filled}|x{'.' * empty}|n]"
+
+
+class FatigueScript(DefaultScript):
+    """
+    Global script that checks once per day at midnight Central Time.
+
+    For each offline character NOT in an InnRoom or owned PlayerHouse:
+    +1 fatigue stack. Each stack = -5% to all stat checks and skill gains.
+    Online (puppeted) players at midnight are exempt.
+    """
+
+    def at_script_creation(self):
+        self.key = "fatigue_script"
+        self.desc = "Daily fatigue check at midnight Central"
+        self.persistent = True
+        self.interval = 60  # Poll every 60 seconds, fire once per day
+        self.db.last_fire_date = ""  # YYYY-MM-DD of last firing
+
+    def at_repeat(self):
+        """Check if it's midnight Central and fire once per day."""
+        import datetime
+        try:
+            from zoneinfo import ZoneInfo
+        except ImportError:
+            from backports.zoneinfo import ZoneInfo
+
+        central = ZoneInfo("America/Chicago")
+        now = datetime.datetime.now(central)
+        today_str = now.strftime("%Y-%m-%d")
+        last_date = self.db.last_fire_date or ""
+
+        # Fire once per day, at or after midnight
+        if today_str != last_date and now.hour >= 0:
+            self.db.last_fire_date = today_str
+            self._apply_fatigue()
+
+    def _apply_fatigue(self):
+        """Apply fatigue to all offline characters not in safe lodging."""
+        from typeclasses.characters import Wrestler
+
+        wrestlers = Wrestler.objects.filter(
+            db_typeclass_path="typeclasses.characters.Wrestler"
+        )
+
+        affected = 0
+        for char in wrestlers:
+            if not char.db.chargen_complete:
+                continue
+
+            # Online (puppeted) players are exempt
+            if char.sessions.count() > 0:
+                continue
+
+            # Check if in safe lodging
+            if char.is_in_safe_lodging():
+                continue
+
+            # Apply fatigue
+            char.db.fatigue_stacks = (char.db.fatigue_stacks or 0) + 1
+            affected += 1
+
+        if affected > 0:
+            logger.log_info(
+                f"KAYFABE FATIGUE: Midnight tick — {affected} character(s) gained fatigue."
+            )
 
 
 class EconomyTickScript(DefaultScript):

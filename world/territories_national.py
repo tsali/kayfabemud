@@ -124,6 +124,21 @@ NATIONAL_TERRITORIES["wwf"] = {
                 "|wType 'travel' to see available destinations.|n"
             ),
         },
+        {
+            "key": "wwf_hotel",
+            "name": "The Manhattan Grand",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("wwf", "territory")],
+            "extras": {"inn_tier": 4, "rest_cost": 200, "rest_bonus": {"all": 3}},
+            "desc": (
+                "A luxury hotel in midtown Manhattan. The WWF puts its main "
+                "eventers up here on MSG nights. King-size beds, room service, "
+                "and a concierge who's seen everything.\n\n"
+                "The minibar is stocked. The sheets are Egyptian cotton. "
+                "For one night, you feel like the champion you're trying "
+                "to become."
+            ),
+        },
     ],
     "exits": [
         ("north;n", "wwf_arena", "wwf_travel"),
@@ -138,6 +153,8 @@ NATIONAL_TERRITORIES["wwf"] = {
         ("east;e", "wwf_office", "wwf_backstage"),
         ("east;e", "wwf_backstage", "wwf_studio"),
         ("west;w", "wwf_studio", "wwf_backstage"),
+        ("south;s", "wwf_bar", "wwf_hotel"),
+        ("north;n", "wwf_hotel", "wwf_bar"),
     ],
 }
 
@@ -255,6 +272,20 @@ NATIONAL_TERRITORIES["wcw"] = {
                 "|wType 'travel' to see available destinations.|n"
             ),
         },
+        {
+            "key": "wcw_hotel",
+            "name": "The Peachtree Grand",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("wcw", "territory")],
+            "extras": {"inn_tier": 4, "rest_cost": 200, "rest_bonus": {"all": 3}},
+            "desc": (
+                "A luxury hotel on Peachtree Street. Turner money means "
+                "the talent stays in style. Marble lobby, valet parking, "
+                "and a rooftop pool overlooking downtown Atlanta.\n\n"
+                "The guaranteed contracts cover the room rate. WCW wrestlers "
+                "live well — maybe too well."
+            ),
+        },
     ],
     "exits": [
         ("north;n", "wcw_arena", "wcw_travel"),
@@ -269,6 +300,8 @@ NATIONAL_TERRITORIES["wcw"] = {
         ("east;e", "wcw_office", "wcw_backstage"),
         ("east;e", "wcw_backstage", "wcw_studio"),
         ("west;w", "wcw_studio", "wcw_backstage"),
+        ("south;s", "wcw_bar", "wcw_hotel"),
+        ("north;n", "wcw_hotel", "wcw_bar"),
     ],
 }
 
@@ -374,6 +407,21 @@ NATIONAL_TERRITORIES["ecw"] = {
                 "|wType 'travel' to see available destinations.|n"
             ),
         },
+        {
+            "key": "ecw_hotel",
+            "name": "South Philly Luxury Suites",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("ecw", "territory")],
+            "extras": {"inn_tier": 4, "rest_cost": 200, "rest_bonus": {"all": 3}},
+            "desc": (
+                "Calling it 'luxury' is generous, but by ECW standards this "
+                "is the Ritz. Actual beds, working plumbing, and a door that "
+                "locks. Phil Eastman negotiated a group rate — it only bounced "
+                "twice.\n\n"
+                "The ECW faithful respect that their heroes sacrifice comfort "
+                "for art. This hotel is the one concession to basic human needs."
+            ),
+        },
     ],
     "exits": [
         ("north;n", "ecw_arena", "ecw_travel"),
@@ -386,6 +434,8 @@ NATIONAL_TERRITORIES["ecw"] = {
         ("north;n", "ecw_backstage", "ecw_arena"),
         ("west;w", "ecw_backstage", "ecw_office"),
         ("east;e", "ecw_office", "ecw_backstage"),
+        ("south;s", "ecw_bar", "ecw_hotel"),
+        ("north;n", "ecw_hotel", "ecw_bar"),
     ],
 }
 
@@ -474,6 +524,20 @@ NATIONAL_TERRITORIES["uk"] = {
                 "|wType 'travel' to see available destinations.|n"
             ),
         },
+        {
+            "key": "uk_hotel",
+            "name": "The Kensington Arms Hotel",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("uk", "territory")],
+            "extras": {"inn_tier": 4, "rest_cost": 200, "rest_bonus": {"all": 3}},
+            "desc": (
+                "A proper British hotel near the Albert Hall. Period furniture, "
+                "floral wallpaper, and a full English breakfast included. "
+                "The rooms have fireplaces and heavy curtains.\n\n"
+                "British hospitality at its finest. The concierge calls you "
+                "'sir' regardless of your alignment."
+            ),
+        },
     ],
     "exits": [
         ("north;n", "uk_arena", "uk_travel"),
@@ -484,6 +548,8 @@ NATIONAL_TERRITORIES["uk"] = {
         ("west;w", "uk_pub", "uk_arena"),
         ("south;s", "uk_arena", "uk_backstage"),
         ("north;n", "uk_backstage", "uk_arena"),
+        ("south;s", "uk_pub", "uk_hotel"),
+        ("north;n", "uk_hotel", "uk_pub"),
     ],
 }
 
@@ -591,6 +657,21 @@ NATIONAL_TERRITORIES["japan"] = {
                 "|wType 'travel' to see available destinations.|n"
             ),
         },
+        {
+            "key": "jp_hotel",
+            "name": "Shinjuku Grand Hotel",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("japan", "territory")],
+            "extras": {"inn_tier": 4, "rest_cost": 200, "rest_bonus": {"all": 3}},
+            "desc": (
+                "A luxury hotel in Shinjuku. Impeccably clean rooms with "
+                "traditional Japanese touches — tatami mats, sliding screens, "
+                "and an onsen (hot spring bath) on the top floor.\n\n"
+                "The gaijin wrestlers marvel at the heated toilet seats. "
+                "The young boys from the dojo aren't allowed here — they "
+                "sleep in the dojo. Hierarchy is everything."
+            ),
+        },
     ],
     "exits": [
         ("north;n", "jp_arena", "jp_travel"),
@@ -603,5 +684,7 @@ NATIONAL_TERRITORIES["japan"] = {
         ("north;n", "jp_backstage", "jp_arena"),
         ("west;w", "jp_backstage", "jp_office"),
         ("east;e", "jp_office", "jp_backstage"),
+        ("south;s", "jp_bar", "jp_hotel"),
+        ("north;n", "jp_hotel", "jp_bar"),
     ],
 }

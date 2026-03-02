@@ -23,10 +23,68 @@ from .objects import ObjectParent
 
 class Room(ObjectParent, DefaultRoom):
     """Base room for Kayfabe."""
-    pass
+
+    def get_display_exits(self, looker, **kwargs):
+        """Show exits with yellow direction names to stand out."""
+        exits = self.filter_visible(
+            self.contents_get(content_type="exit"), looker, **kwargs
+        )
+        if not exits:
+            return ""
+        parts = []
+        for exi in exits:
+            ename = exi.key
+            dest = exi.destination
+            if dest:
+                parts.append(f"|lc{ename}|lt|y{ename}|n|le to |w{dest.key}|n")
+            else:
+                parts.append(f"|lc{ename}|lt|y{ename}|n|le")
+        return "|wExits:|n " + ", ".join(parts)
+
+    def get_display_characters(self, looker, **kwargs):
+        """Group characters by type: Wrestlers, Managers, Trainers, etc."""
+        from typeclasses.npcs import NPCWrestler, NPCManager, BackyardNPC
+        from typeclasses.characters import Wrestler
+
+        characters = self.filter_visible(
+            self.contents_get(content_type="character"), looker, **kwargs
+        )
+        if not characters:
+            return ""
+
+        groups = {}
+        for char in characters:
+            if char == looker:
+                continue
+            if isinstance(char, NPCManager):
+                label = "Managers"
+            elif isinstance(char, (NPCWrestler, BackyardNPC)):
+                role = getattr(char.db, "role", "wrestler") or "wrestler"
+                if role == "trainer":
+                    label = "Trainers"
+                elif role == "announcer":
+                    label = "Announcers"
+                elif role == "authority":
+                    label = "Promoters"
+                else:
+                    label = "Wrestlers"
+            elif isinstance(char, Wrestler):
+                label = "Players"
+            else:
+                label = "Others"
+            groups.setdefault(label, []).append(char)
+
+        parts = []
+        for label, chars in groups.items():
+            names = ", ".join(
+                char.get_display_name(looker, **kwargs) for char in chars
+            )
+            parts.append(f"|w{label}:|n {names}")
+
+        return "\n".join(parts)
 
 
-class ChargenRoom(ObjectParent, DefaultRoom):
+class ChargenRoom(Room):
     """Limbo room where new characters go through character creation."""
 
     def at_object_creation(self):
@@ -39,7 +97,7 @@ class ChargenRoom(ObjectParent, DefaultRoom):
         )
 
 
-class TerritoryRoom(ObjectParent, DefaultRoom):
+class TerritoryRoom(Room):
     """
     Base class for all rooms within a territory zone.
 
@@ -156,3 +214,98 @@ class UniqueRoom(TerritoryRoom):
     def at_object_creation(self):
         super().at_object_creation()
         self.db.room_type = "unique"
+
+
+class InnRoom(TerritoryRoom):
+    """
+    Lodging room where players can rest to clear fatigue and gain stat bonuses.
+
+    Attributes:
+        inn_tier (int): 1=Roadside, 2=Budget, 3=Mid-Range, 4=Luxury
+        rest_cost (int): Dollar cost per rest
+        rest_bonus (dict): Stat bonuses granted on rest (e.g. {"all": 2})
+        messages (list): Territory-specific message board (up to 20 messages)
+    """
+
+    INN_TIER_NAMES = {
+        1: "Roadside Motel",
+        2: "Budget Motel",
+        3: "Mid-Range Hotel",
+        4: "Luxury Hotel",
+    }
+
+    def at_object_creation(self):
+        super().at_object_creation()
+        self.db.room_type = "inn"
+        self.db.inn_tier = 1
+        self.db.rest_cost = 10
+        self.db.rest_bonus = {}  # e.g. {"all": 2} means +2 to all stats
+        self.db.messages = []  # list of {"author": str, "time": float, "text": str}
+
+    def get_display_desc(self, looker, **kwargs):
+        desc = super().get_display_desc(looker, **kwargs)
+        tier_name = self.INN_TIER_NAMES.get(self.db.inn_tier, "Lodging")
+        cost = self.db.rest_cost or 0
+        bonus = self.db.rest_bonus or {}
+        bonus_str = ""
+        if bonus.get("all"):
+            bonus_str = f", +{bonus['all']} all stats for 12h"
+        desc = (
+            f"{desc}\n\n"
+            f"|w[{tier_name}]|n — Rest cost: |y${cost}|n{bonus_str}\n"
+            f"Type |wrest|n to check in. |wboard|n to read messages. |wpost <msg>|n to leave one."
+        )
+        return desc
+
+
+class PlayerHouse(Room):
+    """
+    Player-owned house. Can be purchased in any territory.
+
+    Attributes:
+        owner (str): Character key of the owner
+        territory_key (str): Territory where the house is located
+        territory_name (str): Display name of the territory
+        upgrades (list): List of upgrade keys owned
+        allowed_players (list): Character keys allowed to use this house
+        messages (list): Private message board (up to 20 messages)
+    """
+
+    UPGRADE_COSTS = {
+        "home_gym": 2000,
+        "practice_ring": 5000,
+        "trophy_case": 500,
+        "hot_tub": 1500,
+        "party_deck": 3000,
+    }
+
+    UPGRADE_NAMES = {
+        "home_gym": "Home Gym",
+        "practice_ring": "Practice Ring",
+        "trophy_case": "Trophy Case",
+        "hot_tub": "Hot Tub",
+        "party_deck": "Party Deck",
+    }
+
+    def at_object_creation(self):
+        super().at_object_creation()
+        self.db.owner = ""
+        self.db.territory_key = ""
+        self.db.territory_name = ""
+        self.db.upgrades = []
+        self.db.allowed_players = []
+        self.db.messages = []
+
+    def get_display_header(self, looker, **kwargs):
+        owner = self.db.owner or "Nobody"
+        territory = self.db.territory_name or "Unknown"
+        return f"|w[{owner}'s House]|n |x({territory})|n"
+
+    def get_display_desc(self, looker, **kwargs):
+        desc = super().get_display_desc(looker, **kwargs)
+        upgrades = self.db.upgrades or []
+        if upgrades:
+            names = [self.UPGRADE_NAMES.get(u, u) for u in upgrades]
+            desc = f"{desc}\n\n|wUpgrades:|n {', '.join(names)}"
+        desc = f"{desc}\n\nType |wrest|n to rest. |wupgrade|n to see available upgrades."
+        return desc

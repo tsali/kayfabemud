@@ -119,6 +119,20 @@ DEVELOPMENTAL_TERRITORIES["ovw"] = {
                 "|wType 'travel' to see available destinations.|n"
             ),
         },
+        {
+            "key": "ovw_hotel",
+            "name": "Louisville Budget Hotel",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("ovw", "territory")],
+            "extras": {"inn_tier": 3, "rest_cost": 75, "rest_bonus": {"all": 2}},
+            "desc": (
+                "A budget hotel near Davis Arena. Developmental pay doesn't "
+                "cover luxury, but this place has clean sheets and hot water. "
+                "The front desk knows the OVW roster by name.\n\n"
+                "Corwin's curfew is 11 PM. The hotel staff doesn't enforce "
+                "it, but they do report late arrivals."
+            ),
+        },
     ],
     "exits": [
         ("north;n", "ovw_arena", "ovw_travel"),
@@ -133,6 +147,8 @@ DEVELOPMENTAL_TERRITORIES["ovw"] = {
         ("east;e", "ovw_corwin", "ovw_backstage"),
         ("east;e", "ovw_backstage", "ovw_frost"),
         ("west;w", "ovw_frost", "ovw_backstage"),
+        ("south;s", "ovw_bar", "ovw_hotel"),
+        ("north;n", "ovw_hotel", "ovw_bar"),
     ],
 }
 
@@ -217,6 +233,20 @@ DEVELOPMENTAL_TERRITORIES["fcw"] = {
                 "|wType 'travel' to see available destinations.|n"
             ),
         },
+        {
+            "key": "fcw_hotel",
+            "name": "Tampa Extended Stay",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("fcw", "territory")],
+            "extras": {"inn_tier": 3, "rest_cost": 75, "rest_bonus": {"all": 2}},
+            "desc": (
+                "An extended-stay hotel near the FCW strip mall. Kitchenettes "
+                "with microwaves and mini-fridges. The developmental roster "
+                "lives here for months at a time, cooking ramen and dreaming "
+                "of the main roster.\n\n"
+                "The pool is the one luxury — sore muscles appreciate it."
+            ),
+        },
     ],
     "exits": [
         ("north;n", "fcw_arena", "fcw_travel"),
@@ -227,6 +257,8 @@ DEVELOPMENTAL_TERRITORIES["fcw"] = {
         ("west;w", "fcw_truck", "fcw_arena"),
         ("south;s", "fcw_arena", "fcw_backstage"),
         ("north;n", "fcw_backstage", "fcw_arena"),
+        ("east;e", "fcw_backstage", "fcw_hotel"),
+        ("west;w", "fcw_hotel", "fcw_backstage"),
     ],
 }
 
@@ -314,6 +346,20 @@ DEVELOPMENTAL_TERRITORIES["dsw"] = {
                 "|wType 'travel' to see available destinations.|n"
             ),
         },
+        {
+            "key": "dsw_hotel",
+            "name": "McDonough Motor Inn",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("dsw", "territory")],
+            "extras": {"inn_tier": 3, "rest_cost": 75, "rest_bonus": {"all": 2}},
+            "desc": (
+                "A motor inn off I-75. Basic rooms with Georgia heat barely "
+                "held at bay by window units. DeMott doesn't care where you "
+                "sleep as long as you show up at 6 AM ready to work.\n\n"
+                "The vending machine outside has protein bars. Someone "
+                "thoughtful restocked it."
+            ),
+        },
     ],
     "exits": [
         ("north;n", "dsw_arena", "dsw_travel"),
@@ -324,6 +370,8 @@ DEVELOPMENTAL_TERRITORIES["dsw"] = {
         ("north;n", "dsw_backstage", "dsw_arena"),
         ("west;w", "dsw_backstage", "dsw_office"),
         ("east;e", "dsw_office", "dsw_backstage"),
+        ("east;e", "dsw_backstage", "dsw_hotel"),
+        ("west;w", "dsw_hotel", "dsw_backstage"),
     ],
 }
 
@@ -425,6 +473,20 @@ DEVELOPMENTAL_TERRITORIES["hwa"] = {
                 "|wType 'travel' to see available destinations.|n"
             ),
         },
+        {
+            "key": "hwa_hotel",
+            "name": "Cincinnati Comfort Inn",
+            "typeclass": "typeclasses.rooms.InnRoom",
+            "tags": [("hwa", "territory")],
+            "extras": {"inn_tier": 3, "rest_cost": 75, "rest_bonus": {"all": 2}},
+            "desc": (
+                "A comfort inn near the Sportsplex. Midwestern reliable — "
+                "clean rooms, firm beds, and a continental breakfast that "
+                "includes actual eggs. Thatcher approves.\n\n"
+                "The lobby has a TV permanently tuned to wrestling reruns. "
+                "The night manager is a mark who asks for autographs."
+            ),
+        },
     ],
     "exits": [
         ("north;n", "hwa_arena", "hwa_travel"),
@@ -437,5 +499,7 @@ DEVELOPMENTAL_TERRITORIES["hwa"] = {
         ("north;n", "hwa_backstage", "hwa_arena"),
         ("east;e", "hwa_backstage", "hwa_interview"),
         ("west;w", "hwa_interview", "hwa_backstage"),
+        ("south;s", "hwa_bar", "hwa_hotel"),
+        ("north;n", "hwa_hotel", "hwa_bar"),
     ],
 }
