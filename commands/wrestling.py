@@ -16,6 +16,23 @@ from evennia.utils.create import create_script
 from commands.command import pause_then_look
 
 
+def _check_tutorial(caller, command_name):
+    """
+    Check if player is in tutorial mode and forward command.
+    Returns True if tutorial handled the command (caller should return).
+    """
+    if not getattr(caller.ndb, 'in_tutorial', False):
+        return False
+    scripts = caller.scripts.all()
+    for script in scripts:
+        if script.key == "tutorial_match":
+            script.process_command(command_name)
+            return True
+    # Tutorial flag set but no script found — clean up
+    caller.ndb.in_tutorial = False
+    return False
+
+
 class CmdWrestle(Command):
     """
     Start a wrestling match against an NPC.
@@ -123,6 +140,10 @@ class CmdWork(Command):
 
     def func(self):
         caller = self.caller
+
+        if _check_tutorial(caller, "work"):
+            return
+
         scripts = caller.scripts.get("match_script")
         if not scripts:
             caller.msg("You're not in a match.")
@@ -200,6 +221,10 @@ class CmdSell(Command):
 
     def func(self):
         caller = self.caller
+
+        if _check_tutorial(caller, "sell"):
+            return
+
         scripts = caller.scripts.get("match_script")
         if not scripts:
             caller.msg("You're not in a match.")
@@ -246,6 +271,10 @@ class CmdComeback(Command):
 
     def func(self):
         caller = self.caller
+
+        if _check_tutorial(caller, "comeback"):
+            return
+
         scripts = caller.scripts.get("match_script")
         if not scripts:
             caller.msg("You're not in a match.")
@@ -292,6 +321,10 @@ class CmdFinish(Command):
 
     def func(self):
         caller = self.caller
+
+        if _check_tutorial(caller, "finish"):
+            return
+
         scripts = caller.scripts.get("match_script")
         if not scripts:
             caller.msg("You're not in a match.")
@@ -425,7 +458,7 @@ class CmdCard(Command):
     """
 
     key = "card"
-    aliases = ["roster", "opponents"]
+    aliases = ["opponents"]
     locks = "cmd:all()"
     help_category = "Wrestling"
 
@@ -504,6 +537,10 @@ class CmdHope(Command):
 
     def func(self):
         caller = self.caller
+
+        if _check_tutorial(caller, "hope"):
+            return
+
         scripts = caller.scripts.get("match_script")
         if not scripts:
             caller.msg("You're not in a match.")

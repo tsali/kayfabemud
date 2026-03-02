@@ -5,6 +5,7 @@ stats  — display character sheet
 rank   — show rank progression and career XP
 turn   — alignment turn (Face/Heel/Anti-Hero)
 titles — show territory titles and current holders
+shows  — view upcoming show card
 """
 
 from evennia.commands.command import Command
@@ -354,6 +355,17 @@ class CmdTitles(Command):
     def func(self):
         from world.rules import TERRITORY_TITLES, TERRITORY_TITLES_WOMENS
 
+        # Try to get championship registry
+        holders = {}
+        w_holders = {}
+        try:
+            from evennia.scripts.models import ScriptDB
+            registry = ScriptDB.objects.get(db_key="championship_registry")
+            holders = registry.db.title_holders or {}
+            w_holders = registry.db.womens_title_holders or {}
+        except Exception:
+            pass
+
         msg = f"\n|w{'=' * 50}|n\n|w  TERRITORY CHAMPIONSHIPS|n\n|w{'=' * 50}|n\n"
 
         tier_groups = {
@@ -367,11 +379,93 @@ class CmdTitles(Command):
             msg += f"\n  |c{tier_name}|n\n"
             for terr in territories:
                 title = TERRITORY_TITLES.get(terr, "Unknown Title")
-                msg += f"    {title:40s} |x[Vacant]|n\n"
+                holder_info = holders.get(terr)
+                if holder_info:
+                    champ = holder_info.get("holder", "???")
+                    defenses = holder_info.get("defenses", 0)
+                    msg += f"    {title:40s} |Y{champ}|n ({defenses} def.)\n"
+                else:
+                    msg += f"    {title:40s} |x[Vacant]|n\n"
                 # Show women's title if this territory has one
                 w_title = TERRITORY_TITLES_WOMENS.get(terr)
                 if w_title:
-                    msg += f"    {w_title:40s} |x[Vacant]|n\n"
+                    w_info = w_holders.get(terr)
+                    if w_info:
+                        w_champ = w_info.get("holder", "???")
+                        w_def = w_info.get("defenses", 0)
+                        msg += f"    {w_title:40s} |Y{w_champ}|n ({w_def} def.)\n"
+                    else:
+                        msg += f"    {w_title:40s} |x[Vacant]|n\n"
 
         msg += f"\n|w{'=' * 50}|n"
         self.caller.msg(msg)
+
+
+class CmdShows(Command):
+    """
+    View upcoming show cards.
+
+    Usage:
+        shows           - Show card for your current territory
+        shows <territory> - Show card for a specific territory
+        showhistory     - View past show results
+    """
+    key = "shows"
+    aliases = ["showcard", "showhistory"]
+    locks = "cmd:all()"
+    help_category = "Career"
+
+    def func(self):
+        from world.shows import format_show_card
+
+        caller = self.caller
+        args = self.args.strip().lower()
+
+        # Show history mode
+        if self.cmdstring.lower() == "showhistory":
+            self._show_history(caller)
+            return
+
+        territory = args if args else (caller.db.territory or "")
+        if not territory:
+            caller.msg("|rYou're not in a territory. Use: shows <territory>|n")
+            return
+
+        try:
+            from evennia.scripts.models import ScriptDB
+            scheduler = ScriptDB.objects.get(db_key="show_scheduler")
+            upcoming = scheduler.db.upcoming_shows or {}
+        except Exception:
+            caller.msg("No shows are currently scheduled.")
+            return
+
+        show = upcoming.get(territory)
+        if not show:
+            caller.msg(f"No upcoming shows in {territory}.")
+            return
+
+        caller.msg(format_show_card(show))
+
+    def _show_history(self, caller):
+        try:
+            from evennia.scripts.models import ScriptDB
+            scheduler = ScriptDB.objects.get(db_key="show_scheduler")
+            history = scheduler.db.show_history or []
+        except Exception:
+            caller.msg("No show history available.")
+            return
+
+        if not history:
+            caller.msg("No past shows recorded yet.")
+            return
+
+        msg = f"\n|w{'=' * 50}|n\n|w  SHOW HISTORY|n\n|w{'=' * 50}|n\n"
+        for show in reversed(history[-10:]):
+            msg += f"  |c{show.get('name', '???')}|n ({show.get('territory', '???')})\n"
+            for match in show.get("matches", [])[:3]:
+                msg += f"    {match['wrestler_a']} vs {match['wrestler_b']}\n"
+            if len(show.get("matches", [])) > 3:
+                msg += f"    ... and {len(show['matches']) - 3} more matches\n"
+            msg += "\n"
+        msg += f"|w{'=' * 50}|n"
+        caller.msg(msg)

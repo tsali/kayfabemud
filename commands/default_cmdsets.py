@@ -6,7 +6,13 @@ from evennia import default_cmds
 from evennia.contrib.grid.ingame_map_display.ingame_map_display import CmdMap
 
 # Career
-from commands.career import CmdStats, CmdRank, CmdTurn, CmdTitles
+from commands.career import CmdStats, CmdRank, CmdTurn, CmdTitles, CmdShows
+
+# Contract
+from commands.contract import CmdContract, CmdSign
+
+# Championship
+from commands.championship import CmdTitleShot
 
 # Wrestling match
 from commands.wrestling import (
@@ -30,7 +36,13 @@ from commands.pvp import CmdChallenge, CmdAccept, CmdTeam, CmdBetray, CmdFeud
 from commands.manager import CmdHire, CmdFire, CmdManagerPromo, CmdManagerInterfere
 
 # Economy
-from commands.economy import CmdBalance, CmdBuy, CmdSideJob
+from commands.economy import CmdBalance, CmdBuy, CmdSideJob, CmdMerch
+
+# Social
+from commands.social import CmdWho, CmdRoster, CmdRecord, CmdRespond, CmdSkipTutorial
+
+# Stable
+from commands.stable import CmdStable
 
 # Lodging
 from commands.lodging import CmdRest, CmdBoard, CmdPost, CmdBuyHouse, CmdGoHome, CmdUpgrade
@@ -60,6 +72,14 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdRank())
         self.add(CmdTurn())
         self.add(CmdTitles())
+        self.add(CmdShows())
+
+        # Contract
+        self.add(CmdContract())
+        self.add(CmdSign())
+
+        # Championship
+        self.add(CmdTitleShot())
 
         # Wrestling
         self.add(CmdWrestle())
@@ -98,6 +118,17 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdBalance())
         self.add(CmdBuy())
         self.add(CmdSideJob())
+        self.add(CmdMerch())
+
+        # Social
+        self.add(CmdWho())
+        self.add(CmdRoster())
+        self.add(CmdRecord())
+        self.add(CmdRespond())
+        self.add(CmdSkipTutorial())
+
+        # Stable
+        self.add(CmdStable())
 
         # Lodging
         self.add(CmdRest())

@@ -238,6 +238,91 @@ class CmdBuy(Command):
         )
 
 
+class CmdMerch(Command):
+    """
+    View your merchandise income projection.
+
+    Usage:
+        merch
+
+    Shows your current merch income factors: CHA, kayfabe, rank,
+    gear bonus, manager cut, and estimated weekly income.
+    Merch income requires Midcarder rank (index 3) or above.
+    """
+    key = "merch"
+    aliases = ["merchandise"]
+    locks = "cmd:all()"
+    help_category = "Economy"
+
+    def func(self):
+        caller = self.caller
+        rank_idx = caller.db.rank_index or 0
+
+        if rank_idx < 3:
+            rank = caller.get_rank()
+            caller.msg(
+                f"|rYou need Midcarder rank to sell merch.|n\n"
+                f"Current rank: |w{rank}|n (index {rank_idx}).\n"
+                f"Keep climbing — the merch table opens at Midcarder."
+            )
+            return
+
+        cha = caller.get_stat("cha")
+        kayfabe = caller.db.kayfabe or 50
+        rank_mult = {3: 1, 4: 2, 5: 4, 6: 8, 7: 15}.get(rank_idx, 1)
+        kayfabe_factor = kayfabe / 50.0
+        base_merch = int((cha / 4) * rank_mult * kayfabe_factor)
+
+        # Gear bonus
+        gear_tier = caller.db.gear_tier or 0
+        gear_bonus_val = GEAR_TIERS.get(gear_tier, {}).get("cha_bonus", 0)
+        gear_merch = gear_bonus_val * rank_mult
+
+        total_before_cut = base_merch + gear_merch
+
+        # Manager cut
+        manager_cut = 0
+        manager_name = caller.db.manager
+        cut_pct = 0
+        if manager_name:
+            from evennia.utils.search import search_tag
+            managers = search_tag("npc_manager", category="npc_type")
+            for m in managers:
+                if m.key == manager_name:
+                    cut_pct = m.db.cut_percent or 20
+                    manager_cut = int(total_before_cut * cut_pct / 100)
+                    break
+
+        final = total_before_cut - manager_cut
+        rank_names = {3: "Midcarder", 4: "Upper Midcarder", 5: "Main Eventer",
+                      6: "Champion", 7: "Legend"}
+        rank_name = rank_names.get(rank_idx, "???")
+
+        msg = (
+            f"\n|w{'=' * 44}|n\n"
+            f"|w  MERCH TABLE|n\n"
+            f"|w{'=' * 44}|n\n"
+            f"  |wFormula:|n (CHA/4) x Rank Mult x Kayfabe Factor\n\n"
+            f"  CHA:            |c{cha}|n\n"
+            f"  Base (CHA/4):   |c{cha / 4:.1f}|n\n"
+            f"  Rank:           |c{rank_name}|n (x{rank_mult})\n"
+            f"  Kayfabe:        |c{kayfabe}|n/100 (x{kayfabe_factor:.2f})\n"
+            f"  Base Merch:     |y${base_merch}|n/week\n"
+            f"\n  Gear Tier:      {GEAR_TIERS.get(gear_tier, {}).get('name', '???')}\n"
+            f"  Gear CHA Bonus: +{gear_bonus_val} (adds |y${gear_merch}|n/week)\n"
+            f"\n  Subtotal:       |y${total_before_cut}|n/week\n"
+        )
+
+        if manager_name:
+            msg += f"  Manager Cut:    |r-${manager_cut}|n ({manager_name}, {cut_pct}%)\n"
+
+        msg += (
+            f"\n  |wEstimated Weekly Income: |y${final}|n\n"
+            f"|w{'=' * 44}|n"
+        )
+        caller.msg(msg)
+
+
 class CmdSideJob(Command):
     """
     Work a side job for extra cash.

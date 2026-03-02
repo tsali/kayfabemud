@@ -181,6 +181,24 @@ class BarRoom(TerritoryRoom):
         super().at_object_creation()
         self.db.room_type = "bar"
 
+    def at_object_receive(self, moved_obj, source_location, **kwargs):
+        """Trigger backstage segment on entry."""
+        super().at_object_receive(moved_obj, source_location, **kwargs)
+        self._try_backstage_segment(moved_obj)
+
+    def _try_backstage_segment(self, character):
+        from typeclasses.characters import Wrestler
+        if not isinstance(character, Wrestler):
+            return
+        if not character.db.chargen_complete or not character.sessions.count():
+            return
+
+        from world.backstage import trigger_backstage_segment, format_segment_prompt
+        segment = trigger_backstage_segment(character, "bar")
+        if segment:
+            character.ndb.pending_backstage = segment
+            character.msg(format_segment_prompt(segment, character))
+
 
 class TravelHub(TerritoryRoom):
     """Room that connects territories. Travel command works here."""
@@ -197,6 +215,24 @@ class LockerRoom(TerritoryRoom):
     def at_object_creation(self):
         super().at_object_creation()
         self.db.room_type = "locker"
+
+    def at_object_receive(self, moved_obj, source_location, **kwargs):
+        """Trigger backstage segment on entry."""
+        super().at_object_receive(moved_obj, source_location, **kwargs)
+        self._try_backstage_segment(moved_obj)
+
+    def _try_backstage_segment(self, character):
+        from typeclasses.characters import Wrestler
+        if not isinstance(character, Wrestler):
+            return
+        if not character.db.chargen_complete or not character.sessions.count():
+            return
+
+        from world.backstage import trigger_backstage_segment, format_segment_prompt
+        segment = trigger_backstage_segment(character, "locker")
+        if segment:
+            character.ndb.pending_backstage = segment
+            character.msg(format_segment_prompt(segment, character))
 
 
 class PromoterOffice(TerritoryRoom):

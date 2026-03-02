@@ -646,8 +646,25 @@ def node_finalize(caller, raw_string, **kwargs):
         "  |whelp kayfabe|n    - Full game guide\n"
     )
 
+    # Launch tutorial
+    _start_tutorial(caller)
+
     options = None  # Exit menu
     return text, options
+
+
+def _start_tutorial(caller):
+    """Launch the tutorial match after chargen."""
+    from world.tutorial import TutorialMatchScript
+
+    # Create and start the tutorial script
+    script = caller.scripts.add(TutorialMatchScript)
+    if script:
+        # script is a list when using .add()
+        if isinstance(script, list):
+            script = script[0]
+        script.setup_tutorial(caller)
+        caller.ndb.in_tutorial = True
 
 
 def _find_start_room(fed_key):

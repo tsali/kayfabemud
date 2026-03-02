@@ -227,6 +227,16 @@ class MatchScript(DefaultScript):
                 self.db.crowd_heat = min(100, self.db.crowd_heat + 1)
 
             self.db.move_count += 1
+
+            # Commentary
+            from world.commentary import get_commentary, find_announcer_in_room
+            announcer = find_announcer_in_room(attacker.location if attacker else None)
+            commentary = get_commentary(
+                self.current_phase(), True, a_name, d_name, announcer
+            )
+            if commentary and attacker and attacker.location:
+                attacker.location.msg_contents(commentary)
+
             return True, damage, msg
         else:
             msg = move_data["fail_desc"].format(**fmt)
@@ -236,6 +246,16 @@ class MatchScript(DefaultScript):
             else:
                 self.db.a_momentum += 1
             self.db.move_count += 1
+
+            # Commentary
+            from world.commentary import get_commentary, find_announcer_in_room
+            announcer = find_announcer_in_room(attacker.location if attacker else None)
+            commentary = get_commentary(
+                self.current_phase(), False, a_name, d_name, announcer
+            )
+            if commentary and attacker and attacker.location:
+                attacker.location.msg_contents(commentary)
+
             return False, 0, msg
 
     def do_sell(self, is_player_a=True):
@@ -500,6 +520,55 @@ class MatchScript(DefaultScript):
             elif stars < 1.0:
                 change_promoter_trust(a, territory, -2, "bad match")
 
+        # Record match history for player A
+        import time as _time
+        history_entry = {
+            "opponent": b.key,
+            "result": "win" if player_won else "loss",
+            "stars": stars,
+            "territory": territory,
+            "timestamp": _time.time(),
+        }
+        hist = a.db.match_history or []
+        hist.append(history_entry)
+        if len(hist) > 50:
+            hist = hist[-50:]
+        a.db.match_history = hist
+
+        # Update best match
+        if stars > (a.db.best_match_stars or 0.0):
+            a.db.best_match_stars = stars
+            a.db.best_match_opponent = b.key
+
+        # Update rivals
+        rivals = a.db.rivals or {}
+        rivals[b.key] = rivals.get(b.key, 0) + 1
+        a.db.rivals = rivals
+
+        # Record history for wrestler B if PvP
+        if self.db.is_pvp and hasattr(b, 'db'):
+            b_won = not player_won
+            b_entry = {
+                "opponent": a.key,
+                "result": "win" if b_won else "loss",
+                "stars": stars,
+                "territory": territory,
+                "timestamp": _time.time(),
+            }
+            b_hist = b.db.match_history or []
+            b_hist.append(b_entry)
+            if len(b_hist) > 50:
+                b_hist = b_hist[-50:]
+            b.db.match_history = b_hist
+
+            if stars > (b.db.best_match_stars or 0.0):
+                b.db.best_match_stars = stars
+                b.db.best_match_opponent = a.key
+
+            b_rivals = b.db.rivals or {}
+            b_rivals[a.key] = b_rivals.get(a.key, 0) + 1
+            b.db.rivals = b_rivals
+
         # Level up check
         levels = check_level_up(a)
 
@@ -528,9 +597,53 @@ class MatchScript(DefaultScript):
         if levels > 0:
             summary += f"  |YLEVEL UP! Now level {a.db.level}!|n\n"
 
+        # Injury check
+        from world.injuries import check_injury, apply_injury, format_injury_status
+        injury = check_injury(a, match_intensity=self.db.crowd_heat)
+        if injury:
+            apply_injury(a, injury)
+            summary += f"  |r*** INJURED: {injury['severity_name']} {injury['name']}|n\n"
+
+        # Title match resolution
+        title_match = getattr(a.db, 'pending_title_match', None)
+        if title_match and player_won:
+            self._resolve_title_win(a, title_match)
+            summary += f"  |Y*** NEW CHAMPION: {title_match['title_name']} ***|n\n"
+        if title_match:
+            a.db.pending_title_match = None
+
         summary += f"|w{'=' * 44}|n"
 
         return stars, payoff, xp, summary
+
+    def _resolve_title_win(self, winner, title_match):
+        """Transfer a title to the winner."""
+        import time as _time
+        from evennia.scripts.models import ScriptDB
+
+        territory = title_match["territory"]
+        title_type = title_match.get("title_type", "main")
+
+        try:
+            registry = ScriptDB.objects.get(db_key="championship_registry")
+        except (ScriptDB.DoesNotExist, ScriptDB.MultipleObjectsReturned):
+            return
+
+        if title_type == "womens":
+            holders = registry.db.womens_title_holders or {}
+        else:
+            holders = registry.db.title_holders or {}
+
+        holders[territory] = {
+            "holder": winner.key,
+            "defenses": 0,
+            "won_at": _time.time(),
+        }
+
+        if title_type == "womens":
+            registry.db.womens_title_holders = holders
+        else:
+            registry.db.title_holders = holders
 
 
 def _health_bar(pct, width=20):
@@ -648,7 +761,9 @@ class EconomyTickScript(DefaultScript):
         week = self.db.week_count
 
         self._process_manager_fees()
+        self._process_contract_wages()
         self._process_merch_income()
+        self._process_injury_recovery()
         self._process_rank_ups()
 
         # Log every 4 weeks (game month)
@@ -700,6 +815,58 @@ class EconomyTickScript(DefaultScript):
                     )
                 # Mark manager as available again
                 mgr.db.available = True
+
+    def _process_contract_wages(self):
+        """Pay weekly contract wages and decrement remaining weeks."""
+        from typeclasses.characters import Wrestler
+
+        wrestlers = Wrestler.objects.filter(
+            db_typeclass_path="typeclasses.characters.Wrestler"
+        )
+
+        for char in wrestlers:
+            contract = char.db.contract
+            if not contract:
+                continue
+
+            pay = contract.get("weekly_pay", 0)
+            weeks = contract.get("weeks_remaining", 0)
+
+            if weeks <= 0:
+                # Contract expired
+                char.db.contract = None
+                if char.sessions.count():
+                    char.msg(
+                        f"|y[Contract] Your contract with {contract.get('territory', '???')} "
+                        f"has expired. Visit a Promoter's Office to re-sign.|n"
+                    )
+                continue
+
+            # Pay wages
+            char.db.money = (char.db.money or 0) + pay
+            contract["weeks_remaining"] = weeks - 1
+            char.db.contract = contract
+
+            if char.sessions.count():
+                char.msg(
+                    f"|g[Contract] Weekly wages: +${pay} from {contract.get('territory', '???')}. "
+                    f"Balance: ${char.db.money}. ({weeks - 1} weeks left)|n"
+                )
+
+    def _process_injury_recovery(self):
+        """Process injury recovery for all characters."""
+        from typeclasses.characters import Wrestler
+        from world.injuries import process_injury_recovery
+
+        wrestlers = Wrestler.objects.filter(
+            db_typeclass_path="typeclasses.characters.Wrestler"
+        )
+
+        for char in wrestlers:
+            if not char.db.injury:
+                continue
+            is_resting = char.is_in_safe_lodging() if hasattr(char, 'is_in_safe_lodging') else False
+            process_injury_recovery(char, is_resting=is_resting)
 
     def _process_merch_income(self):
         """Passive merch income based on CHA, kayfabe, and rank."""
@@ -977,3 +1144,140 @@ class NPCSchedulerScript(DefaultScript):
             f"{guest_npc.key} has arrived for a guest spot!\n"
             f"The crowd buzz is electric!|n\n"
         )
+
+
+class StableRegistryScript(DefaultScript):
+    """
+    Global registry for stables/factions.
+    Stores stable data: members, leader, territory, alignment, invites.
+    """
+
+    def at_script_creation(self):
+        self.key = "stable_registry"
+        self.desc = "Stable/faction registry"
+        self.persistent = True
+        self.interval = 0  # No repeating; data store only
+
+        self.db.stables = {}  # {name: {leader, members, territory, alignment, invites}}
+
+
+class ChampionshipRegistryScript(DefaultScript):
+    """
+    Global registry for championship title holders.
+    """
+
+    def at_script_creation(self):
+        self.key = "championship_registry"
+        self.desc = "Championship title registry"
+        self.persistent = True
+        self.interval = 0
+
+        self.db.title_holders = {}  # {territory: {holder, defenses, won_at}}
+        self.db.womens_title_holders = {}
+
+
+class ShowSchedulerScript(DefaultScript):
+    """
+    Global script that generates show cards every 4 economy ticks (1 game month).
+    Announces upcoming shows 2 ticks before they happen.
+    """
+
+    def at_script_creation(self):
+        self.key = "show_scheduler"
+        self.desc = "Show card generator"
+        self.persistent = True
+        self.interval = 1800  # Same as economy tick (30 min)
+
+        self.db.tick_count = 0
+        self.db.upcoming_shows = {}  # {territory: show_dict}
+        self.db.show_history = []  # last 20 shows
+
+    def at_repeat(self):
+        self.db.tick_count = (self.db.tick_count or 0) + 1
+        tick = self.db.tick_count
+
+        # Every 4 ticks (1 game month), generate new cards
+        if tick % 4 == 0:
+            self._generate_shows()
+
+        # 2 ticks before show, announce
+        if tick % 4 == 2:
+            self._announce_shows()
+
+    def _generate_shows(self):
+        """Generate show cards for all active territories."""
+        from world.shows import generate_show_card
+        from typeclasses.characters import Wrestler
+        from typeclasses.npcs import NPCWrestler
+        from evennia.utils.search import search_tag
+
+        # Territories that run shows (tier 3+)
+        show_territories = [
+            "memphis", "midsouth", "midatlantic", "florida", "georgia",
+            "wccw", "awa", "stampede", "pnw",
+            "ovw", "fcw", "dsw", "hwa",
+            "wwf", "wcw", "ecw", "uk", "japan",
+        ]
+
+        upcoming = {}
+        wrestlers = Wrestler.objects.filter(
+            db_typeclass_path="typeclasses.characters.Wrestler"
+        )
+
+        for terr in show_territories:
+            # Find contracted players in this territory
+            contracted = [
+                w for w in wrestlers
+                if w.db.chargen_complete
+                and w.db.contract
+                and w.db.contract.get("territory") == terr
+            ]
+
+            # Find NPC wrestlers for this territory
+            npc_list = search_tag(terr, category="territory_home")
+            npcs = [
+                n for n in npc_list
+                if isinstance(n, NPCWrestler)
+                and getattr(n.db, 'role', 'wrestler') == 'wrestler'
+            ]
+
+            show = generate_show_card(terr, contracted, npcs)
+            upcoming[terr] = show
+
+        # Archive old shows
+        history = self.db.show_history or []
+        old_shows = self.db.upcoming_shows or {}
+        for show in old_shows.values():
+            history.append(show)
+        if len(history) > 20:
+            history = history[-20:]
+        self.db.show_history = history
+
+        self.db.upcoming_shows = upcoming
+
+    def _announce_shows(self):
+        """Announce upcoming shows to players in those territories."""
+        from typeclasses.characters import Wrestler
+
+        upcoming = self.db.upcoming_shows or {}
+        wrestlers = Wrestler.objects.filter(
+            db_typeclass_path="typeclasses.characters.Wrestler"
+        )
+
+        for terr, show in upcoming.items():
+            if show.get("announced"):
+                continue
+
+            # Find online players in this territory
+            for w in wrestlers:
+                if (w.db.chargen_complete and w.sessions.count()
+                        and (w.db.territory or "").lower() == terr):
+                    w.msg(
+                        f"\n|Y*** UPCOMING SHOW ***|n\n"
+                        f"  |w{show['name']}|n\n"
+                        f"  Check the card with |wshows|n.\n"
+                    )
+
+            show["announced"] = True
+
+        self.db.upcoming_shows = upcoming

@@ -132,6 +132,21 @@ class Wrestler(ObjectParent, DefaultCharacter):
         # Player Houses
         self.db.owned_houses = []  # list of house dbref ids
 
+        # Match History (Phase 1)
+        self.db.match_history = []  # list of dicts, capped at 50
+        self.db.best_match_stars = 0.0
+        self.db.best_match_opponent = ""
+        self.db.rivals = {}  # {opponent_name: times_faced}
+
+        # Injury (Phase 3)
+        self.db.injury = None  # dict or None
+
+        # Contract (Phase 3)
+        self.db.contract = None  # dict or None
+
+        # Stable (Phase 2)
+        self.db.stable = ""  # stable name if in one
+
     def setup_traits(self):
         """Initialize the 6 core stats. Called during chargen after style is chosen."""
         for stat_key, stat_name in [
@@ -193,6 +208,11 @@ class Wrestler(ObjectParent, DefaultCharacter):
             # Expired — clear it
             self.db.rest_bonus_active = {}
             self.db.rest_bonus_expires = 0
+
+        # Apply injury penalty
+        injury = self.db.injury
+        if injury and injury.get("stat_penalty") == stat_key:
+            value -= injury.get("penalty_amount", 0)
 
         return max(1, int(value))
 
