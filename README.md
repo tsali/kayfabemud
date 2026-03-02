@@ -260,19 +260,49 @@ cd /opt/evennia/live && source ../venv/bin/activate && evennia reboot
 
 ---
 
-## Full NPC Roster
+## Territories & Rosters
 
-381 named wrestlers + 17 managers across all territories. Tier 1 backyard feds (GCCW, FHWA, GSW, LLU, Smoky Mountain) use randomly generated NPCs and are not listed here.
+30 territories, 194 rooms, 381 named wrestlers, 17 managers, and 36+ randomly generated backyard NPCs.
 
-### Pacific Northwest Wrestling (PNW) — Tier 1
+---
 
-| Name | Based On | Role | Alignment | Level | Finisher |
-|------|----------|------|-----------|-------|----------|
-| Roddy Viper | Roddy Piper | Wrestler | Heel | 38 | Sleeper Hold |
-| Ladykiller Buddy Bloom | Buddy Rose | Wrestler | Heel | 28 | DDT |
-| Typhoon Sato | original | Wrestler | Face | 25 | Tidal Wave |
+### Tier 1 — Backyard Feds
 
-### Pensacola Wrestling School — Tier 2
+Small-time operations in VFW halls, backyards, and converted buildings. $5 admission, folding chairs, and dreams. Each has 5 rooms: parking lot, venue, locker room, motel, and travel hub. NPCs are randomly generated on each world build — a rotating cast of local talent with colorful gimmicks.
+
+#### Gulf Coast Championship Wrestling (GCCW) — Pensacola, FL
+
+A gutted auto body shop with a regulation ring donated by the Savea family. Sandy gravel lot, industrial fans pushing Gulf humidity around. VHS camcorder on a tripod records every show — these tapes sometimes find the right people. *Randomly generated NPCs.*
+
+#### Federal Hills Wrestling Alliance (FHWA) — Shepherdsville, KY
+
+A VFW hall off the highway with a gravel parking lot and a hand-painted sign. 40-person capacity, metal bleachers, and a ring that's seen better decades. The crowd knows their wrestling though. *Randomly generated NPCs.*
+
+#### Garden State Grappling (GSG) — Vineland, NJ
+
+A strip mall storefront converted into a wrestling venue. The Jersey crowd are smart marks who will chant "boring" if you don't bring it. Word is a WWF scout has been seen in the area. *Randomly generated NPCs.*
+
+#### Bayou Brawling Alliance (BBA) — Shreveport, LA
+
+A muddy field behind a tin-roofed barn. Hay bale seating, pickup trucks parked ring-side, and mosquitoes the size of small birds. What it lacks in polish it makes up for in violence. *Randomly generated NPCs.*
+
+#### Lone Star Underground (LSU) — Fort Worth, TX
+
+A stockyard arena in a converted livestock auction barn. No rules, no script, and the crowd throws beer cans when they're happy. Texas-sized everything — including the bumps. *Randomly generated NPCs.*
+
+#### Peach State Championship (PSC) — Macon, GA
+
+An American Legion hall with $5 admission and boiled peanuts at the concession stand. Close enough to Atlanta that TBS cameras might wander by someday. The Georgia heat is free. *Randomly generated NPCs.*
+
+---
+
+### Tier 2 — Training Schools
+
+Where wrestlers learn the craft. Each school has a head trainer with a distinct philosophy. 5-10 rooms including training floor, ring, motel, and travel hub.
+
+#### Pensacola Wrestling School (Samoan Training Grounds) — Pensacola, FL
+
+Chief Afa and Sika Savea's compound on the beach. "NO WEAKLINGS" painted on the gym wall. The Anoa'i bloodline trains here — Samoan Drop is the first move you learn, and the last one you forget. 10 rooms, 20 named NPCs.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
@@ -297,31 +327,51 @@ cd /opt/evennia/live && source ../venv/bin/activate && evennia reboot
 | "Coconut" Jimmy Snooks Jr. | Jimmy Snuka Jr. | Wrestler | Face | 12 | Superfly Splash |
 | "Samoan Storm" Manu Savea | Manu | Wrestler | Face | 10 | Samoan Drop |
 
-### Slaughterhouse Training Center — Tier 2
+#### Viktor Kovalenko's Slaughterhouse — North Andover, MA
+
+A freezing New England warehouse where Viktor Kovalenko (Killer Kowalski) breaks you down and builds you back. Brutal strength training. Many quit. The ones who survive are ready for anything. 6 rooms.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
 | Viktor Kovalenko | Killer Kowalski | Trainer | Heel | 40 | Kowalski Claw |
 
-### Beast Works Academy — Tier 2
+#### Beast Works Academy — Westville, NJ
+
+Larry Sharpton (Larry Sharpe) runs a power wrestler factory that feeds directly into the WWF and Mid-Atlantic territories. If you can't slam, you can't stay. 5 rooms.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
 | Larry Sharpton | Larry Sharpe | Trainer | Face | 35 | Boston Crab |
 
-### Funking Conservatory — Tier 2
+#### The Funking Conservatory — Ocala, FL
+
+Dory Funk Sr.'s horse ranch turned wrestling academy. Technical chain wrestling is the curriculum. You learn to work a hold before you learn to throw a punch. 5 rooms.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
 | Dory Funk Sr. | Dory Funk Jr. | Trainer | Face | 40 | Spinning Toe Hold |
 
-### Hart Dungeon — Tier 2
+#### The Dungeon of Holds — Tampa, FL
+
+Boris Malenko's basement. Catch wrestling, submission focus, and an old man who can still stretch anyone in the room. The most technically demanding school in the game. 5 rooms.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
 | Boris Malenko | Boris Malenko | Trainer | Heel | 40 | Russian Legsweep |
 
-### Memphis Wrestling — Tier 3
+#### The Proving Grounds — Eldon, MO
+
+Harley Race's ranch. NWA all-rounder style — you learn to do everything because a champion has to. Psychology emphasis: if the crowd doesn't care, neither does Harley. 5 rooms. *Randomly generated NPCs.*
+
+---
+
+### Tier 3 — Regional Territories
+
+The real business. TV deals, arena shows, and promoters who control your career. 6-8 rooms including arena, backstage, gym, bar, promoter's office, hotel, and travel hub.
+
+#### Memphis Championship Wrestling — Memphis, TN
+
+Mid-South Coliseum. The promo capital of wrestling — if you can't talk, you can't work Memphis. Beale Street bars, late-night studio tapings, and Jerry Crowley sitting on a throne daring you to take it. 8 rooms.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
@@ -335,7 +385,9 @@ cd /opt/evennia/live && source ../venv/bin/activate && evennia reboot
 | Andy Coughlin | Andy Kaufman | Wrestler | Heel | 10 | Slap |
 | Lance Rosemont | Lance Russell | Announcer | Face | 1 | — |
 
-### Mid-South Wrestling — Tier 3
+#### Mid-South Wrestling — Shreveport, LA
+
+Hirsch Memorial Coliseum. Bill Watts runs this territory with an iron fist — no top-rope moves, no nonsense. Stiff workers, legit tough guys, and the best tag team division in the country. 7 rooms.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
@@ -358,7 +410,9 @@ cd /opt/evennia/live && source ../venv/bin/activate && evennia reboot
 | Shanghai Pierce | Shanghai Pierce | Wrestler | Heel | 18 | Texas Stampede |
 | Jim Roth | Jim Ross | Announcer | Face | 1 | — |
 
-### Mid-Atlantic Championship Wrestling — Tier 3
+#### Mid-Atlantic Championship Wrestling — Charlotte, NC
+
+Greensboro Coliseum. The NWA world title lives here. Rick Fontaine struts through the arena like he owns the place — because he does. Technical wrestling, blood feuds, and 60-minute broadways. 8 rooms.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
@@ -379,7 +433,9 @@ cd /opt/evennia/live && source ../venv/bin/activate && evennia reboot
 | George Southard | George South | Wrestler | Heel | 14 | Slam |
 | Italian Stallion | Italian Stallion | Wrestler | Face | 14 | Dropkick |
 
-### World Class Championship Wrestling (WCCW) — Tier 3
+#### World Class Championship Wrestling (WCCW) — Dallas, TX
+
+The Sportatorium. The Von Adler family dynasty — three brothers carrying the territory on their backs against the Freebirds. Texas heat, Texas crowds, and Texas-sized grudge matches. 7 rooms.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
@@ -392,7 +448,9 @@ cd /opt/evennia/live && source ../venv/bin/activate && evennia reboot
 | Chris Adkins | Chris Adams | Wrestler | Heel | 30 | Superkick |
 | Buddy Robards | Buddy Roberts | Wrestler | Heel | 28 | Eye Rake |
 
-### American Wrestling Association (AWA) — Tier 3
+#### American Wrestling Association (AWA) — Minneapolis, MN
+
+Minneapolis Auditorium. Vernon Gavin built this territory on legitimacy — real athletes, real competition, real wrestling. The old guard resists change, but the talent keeps coming. 8 rooms.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
@@ -414,7 +472,9 @@ cd /opt/evennia/live && source ../venv/bin/activate && evennia reboot
 | Wayne Bloom | Wayne Bloom | Wrestler | Heel | 18 | Big Boot |
 | Boris Zhukov | Boris Zhukov | Wrestler | Heel | 16 | Russian Headbutt |
 
-### Stampede Wrestling — Tier 3
+#### Stampede Wrestling — Calgary, AB, Canada
+
+Victoria Pavilion. The Harmon family dungeon produces the toughest workers in the business. Stuart Harmon stretches you in the basement until you either tap or earn your spot. Calgary winters build character. 6 rooms.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
@@ -430,7 +490,9 @@ cd /opt/evennia/live && source ../venv/bin/activate && evennia reboot
 | Rex Niedhardt | fictional Neidhart | Wrestler | Heel | 18 | Double Powerslam |
 | Anvil Niedhardt Jr. | fictional Neidhart | Wrestler | Heel | 16 | Double Powerslam |
 
-### Georgia Championship Wrestling (GCW) — Tier 3
+#### Georgia Championship Wrestling (GCW) — Atlanta, GA
+
+The Omni. The only regional territory with national TV on TBS. Gordon Stoley calls the action with a voice like bourbon and wisdom. Getting on Georgia TV can change your career overnight. 7 rooms.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
@@ -439,7 +501,9 @@ cd /opt/evennia/live && source ../venv/bin/activate && evennia reboot
 | The Phantom Rider | original | Wrestler | Anti-Hero | 25 | Ghost Driver |
 | Gordon Stoley | Gordon Solie | Announcer | Face | 1 | — |
 
-### Championship Wrestling from Florida — Tier 3
+#### Championship Wrestling from Florida — Tampa, FL
+
+Tampa Armory. Stiff workers and Florida humidity. Rusty Roads is the common man's champion — he bleeds, he sweats, and the fans love him for it. A proving ground for NWA hopefuls. 7 rooms.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
@@ -449,7 +513,25 @@ cd /opt/evennia/live && source ../venv/bin/activate && evennia reboot
 | Keith Solomon | Kevin Sullivan | Wrestler | Heel | 30 | Double Stomp |
 | Wildcat Willie | original | Wrestler | Face | 22 | Wildcat Claw |
 
-### Ohio Valley Wrestling (OVW) — Tier 3.5 Developmental
+#### Pacific Northwest Wrestling (PNW) — Portland, OR
+
+Portland Sports Arena. A worker's territory where in-ring ability matters more than gimmicks. The Pacific Northwest crowd is quiet until you earn their respect — then they're yours for life. 7 rooms.
+
+| Name | Based On | Role | Alignment | Level | Finisher |
+|------|----------|------|-----------|-------|----------|
+| Roddy Viper | Roddy Piper | Wrestler | Heel | 38 | Sleeper Hold |
+| Ladykiller Buddy Bloom | Buddy Rose | Wrestler | Heel | 28 | DDT |
+| Typhoon Sato | original | Wrestler | Face | 25 | Tidal Wave |
+
+---
+
+### Tier 3.5 — Developmental Territories
+
+The last stop before the big leagues. TV tapings every week, smaller arenas (250-400 capacity), and scouts watching every match. Get called up or get cut.
+
+#### Ohio Valley Wrestling (OVW) — Louisville, KY
+
+Davis Arena, a converted warehouse in Louisville. Jim Corwin watches from backstage with a tennis racket and strong opinions. VHS tape study sessions, promos graded on a curve, and the phone call that changes everything. The pipeline to WWF. 8 rooms, 22 named NPCs.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
@@ -478,7 +560,9 @@ cd /opt/evennia/live && source ../venv/bin/activate && evennia reboot
 
 > **Note**: "The East End Villain" Josh Ashcraft is used with permission. He is a real wrestler, manager, and color commentator at OVW 1:1 in Louisville, KY. In-game he serves as color commentator (announcer) at Davis Arena AND is available as an Anti-Hero manager who will manage anyone to greatness. 15+ years in OVW across refereeing, managing (Legacy of Brutality stable), wrestling, and commentary.
 
-### Florida Championship Wrestling (FCW) — Tier 3.5 Developmental
+#### Florida Championship Wrestling (FCW) — Tampa, FL
+
+Production truck parked outside a strip mall arena. Monday night tapings, ring psychology drills, and a roster hungry to prove they belong. The modern developmental model — TV-ready or go home. 6 rooms.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
@@ -488,7 +572,9 @@ cd /opt/evennia/live && source ../venv/bin/activate && evennia reboot
 | Bray Rotunda | Bray Wyatt | Wrestler | Heel | 18 | Sister Abigail |
 | Naomi Fatu | Naomi | Wrestler | Face | 14 | Rear View |
 
-### Deep South Wrestling (DSW) — Tier 3.5 Developmental
+#### Deep South Wrestling (DSW) — McDonough, GA
+
+A warehouse with no AC where "Sergeant" Bill DeMott runs boot camp. Physical toughness is the only curriculum. If you can survive the Georgia heat and DeMott's drills, you can survive anything. 6 rooms.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
@@ -497,7 +583,9 @@ cd /opt/evennia/live && source ../venv/bin/activate && evennia reboot
 | Bobby Lash Jr. | Bobby Lashley (DSW) | Wrestler | Face | 16 | Dominator |
 | Cody Rhoades Jr. | Cody Rhodes (DSW) | Wrestler | Face | 14 | Cross Rhodes |
 
-### Heartland Wrestling Association (HWA) — Tier 3.5 Developmental
+#### Heartland Wrestling Association (HWA) — Cincinnati, OH
+
+Les Thatcher's classroom. Promo labs, psychology seminars, and a trainer who has forgotten more about wrestling than most people will ever learn. The cerebral approach to developmental. 7 rooms.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
@@ -505,7 +593,15 @@ cd /opt/evennia/live && source ../venv/bin/activate && evennia reboot
 | Brian "The Dragon" Danielson | Bryan Danielson | Wrestler | Face | 18 | Cattle Mutilation |
 | Nick Nemeth Jr. | Dolph Ziggler (HWA) | Wrestler | Heel | 14 | Zig Zag |
 
-### World Wrestling Federation (WWF) — Tier 4
+---
+
+### Tier 4 — National / International
+
+The biggest stages in the world. Sold-out arenas, national TV, and the pressure of performing for millions. This is where legends are made — or broken.
+
+#### World Wrestling Federation (WWF) — New York, NY
+
+Madison Square Garden. 20,000 seats, national TV, and the machine that turns wrestlers into superstars. The biggest roster in the game — from Hawk Hogan at the top to Gillberg at the very bottom. 8 rooms, 77 named NPCs.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
@@ -588,7 +684,9 @@ cd /opt/evennia/live && source ../venv/bin/activate && evennia reboot
 | Duane Gill | Gillberg | Wrestler | Face | 8 | Jackhammer |
 | Barry Hardy | Barry Hardy | Wrestler | Face | 8 | Small Package |
 
-### World Championship Wrestling (WCW) — Tier 4
+#### World Championship Wrestling (WCW) — Atlanta, GA
+
+CNN Center. Turner money, Monday Night Wars, and the deepest cruiserweight division on the planet. From "The Scorpion" Steve Borden to Lodi holding a sign in the crowd — everyone has a spot. 8 rooms, 57 named NPCs.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
@@ -665,7 +763,9 @@ cd /opt/evennia/live && source ../venv/bin/activate && evennia reboot
 | Lodi Picket | Lodi | Wrestler | Heel | 12 | Flapjack |
 | Sgt. Buddy Lee Parker | Buddy Lee Parker | Wrestler | Heel | 12 | Clothesline |
 
-### Extreme Championship Wrestling (ECW) — Tier 4
+#### Extreme Championship Wrestling (ECW) — Philadelphia, PA
+
+The Bingo Hall. 1,200 rabid fans who throw chairs and chant profanity. No rules, no limits, and a roster that will do anything to get a reaction. The most dangerous territory in the game. 7 rooms, 44 named NPCs.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
@@ -719,7 +819,9 @@ cd /opt/evennia/live && source ../venv/bin/activate && evennia reboot
 | Ian Rotton | Ian Rotten | Wrestler | Anti-Hero | 16 | Piledriver |
 | Francine Raines | Francine | Wrestler | Heel | 14 | Low Blow |
 
-### New Japan / Japan — Tier 4
+#### All Japan / New Japan Pro Wrestling — Tokyo, Japan
+
+Nippon Budokan. The workrate capital of the world — 30-minute classics are the norm, not the exception. Strict hierarchy, stiff strikes, and a roster that includes the best joshi wrestlers alive. Lucha libre crossover talent rounds out the international flavor. 7 rooms, 45 named NPCs.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
@@ -769,7 +871,9 @@ cd /opt/evennia/live && source ../venv/bin/activate && evennia reboot
 | Masahiro Choono | Masahiro Chono | Wrestler | Heel | 35 | STF |
 | Genichiro Tendoh | Genichiro Tenryu | Wrestler | Anti-Hero | 36 | Powerbomb |
 
-### British Wrestling — Tier 4
+#### World of Sport Wrestling — London, UK
+
+Royal Albert Hall. Technical chain wrestling, catch-as-catch-can, and a British crowd that appreciates the craft. From the enormous Large Lad to the technical wizardry of Johnny Sinclair — a different style entirely. 6 rooms, 9 named NPCs.
 
 | Name | Based On | Role | Alignment | Level | Finisher |
 |------|----------|------|-----------|-------|----------|
