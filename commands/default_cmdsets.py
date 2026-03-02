@@ -3,6 +3,7 @@ Kayfabe: Protect the Business — Command sets.
 """
 
 from evennia import default_cmds
+from evennia.contrib.grid.ingame_map_display.ingame_map_display import CmdMap
 
 # Career
 from commands.career import CmdStats, CmdRank, CmdTurn, CmdTitles
@@ -85,6 +86,9 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdBalance())
         self.add(CmdBuy())
         self.add(CmdSideJob())
+
+        # Map (ASCII ingame map from compass exits)
+        self.add(CmdMap())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):

@@ -63,13 +63,17 @@ def build_world():
 
             rooms[room_def["key"]] = room
 
-        # Create exits
+        # Create exits (with optional descriptions for 'look <direction>')
+        exit_descs = terr_data.get("exit_descs", {})
         for exit_def in terr_data.get("exits", []):
             exit_name, from_key, to_key = exit_def
             from_room = rooms.get(from_key)
             to_room = rooms.get(to_key)
             if from_room and to_room:
-                _create_exit(exit_name, from_room, to_room)
+                # Look up exit description by (from_key, exit_key)
+                exit_key = exit_name.split(";")[0]
+                desc = exit_descs.get((from_key, exit_key))
+                _create_exit(exit_name, from_room, to_room, desc=desc)
             else:
                 logger.log_warn(
                     f"  Could not create exit '{exit_name}': "
@@ -123,18 +127,29 @@ def _create_room(key, name, typeclass, desc="", tags=None):
     return room
 
 
-def _create_exit(name, from_room, to_room):
-    """Create an exit between rooms. Skip if duplicate."""
-    # Check for existing exit with same name from this room
+def _create_exit(name, from_room, to_room, desc=None):
+    """Create an exit between rooms. Supports alias syntax (e.g. 'north;n').
+    Skip if duplicate. Optionally set a description for 'look <direction>'."""
+    # Parse aliases from semicolon-separated name
+    parts = name.split(";")
+    key = parts[0]
+    aliases = parts[1:] if len(parts) > 1 else []
+
+    # Check for existing exit with same key from this room
     for ex in from_room.exits:
-        if ex.key == name:
+        if ex.key == key:
             return ex
-    return create_object(
+
+    exit_obj = create_object(
         "typeclasses.exits.Exit",
-        key=name,
+        key=key,
+        aliases=aliases,
         location=from_room,
         destination=to_room,
     )
+    if desc:
+        exit_obj.db.desc = desc
+    return exit_obj
 
 
 def _spawn_backyard_npcs(fed_key, venue_room, count=6):

@@ -27,7 +27,8 @@ BACKYARD_TERRITORIES["bba"] = {
                 "A hand-spray-painted banner on a bedsheet reads: "
                 "'BBA — BAYOU BRAWLIN' — TONIGHT'. A cooler of Abita beer "
                 "sits in the bed of someone's truck. The sound of bodies "
-                "hitting plywood carries through the humid night air."
+                "hitting plywood carries through the humid night air.\n\n"
+                "|wExits: |nsouth|w to the venue, |nnorth|w to the road.|n"
             ),
         },
         {
@@ -44,7 +45,9 @@ BACKYARD_TERRITORIES["bba"] = {
                 "The crowd is rowdy — these are oil field workers and "
                 "swamp people who want to see a fight. A single bare bulb "
                 "swings above the ring. Someone brought a camcorder but "
-                "the lens keeps fogging in the humidity."
+                "the lens keeps fogging in the humidity.\n\n"
+                "Type |wcard|n to see tonight's lineup. |wwrestle <name>|n to get in the ring.\n\n"
+                "|wExits: |nnorth|w to the parking lot, |nwest|w to the locker room.|n"
             ),
         },
         {
@@ -58,7 +61,8 @@ BACKYARD_TERRITORIES["bba"] = {
                 "change behind blankets hung from the rafters.\n\n"
                 "The conditions are brutal but the competition is stiffer "
                 "than you'd expect. These boys hit hard and stiff — "
-                "Shreveport style doesn't believe in pulling punches."
+                "Shreveport style doesn't believe in pulling punches.\n\n"
+                "|wExits: |neast|w back to the arena.|n"
             ),
         },
         {
@@ -79,15 +83,21 @@ BACKYARD_TERRITORIES["bba"] = {
         },
     ],
     "exits": [
-        ("parking", "bba_parking", "bba_venue"),
-        ("barn", "bba_parking", "bba_venue"),
-        ("locker", "bba_venue", "bba_locker"),
-        ("stalls", "bba_venue", "bba_locker"),
-        ("ring", "bba_locker", "bba_venue"),
-        ("out", "bba_venue", "bba_parking"),
-        ("road", "bba_parking", "bba_road"),
-        ("back", "bba_road", "bba_parking"),
+        ("south;s", "bba_parking", "bba_venue"),
+        ("north;n", "bba_venue", "bba_parking"),
+        ("west;w", "bba_venue", "bba_locker"),
+        ("east;e", "bba_locker", "bba_venue"),
+        ("north;n", "bba_parking", "bba_road"),
+        ("south;s", "bba_road", "bba_parking"),
     ],
+    "exit_descs": {
+        ("bba_parking", "south"): "Through the barn doors you can see the converted wrestling venue — hay bales for seats, a ring built from lumber and telephone poles.",
+        ("bba_venue", "north"): "The barn doors open to the muddy field. Pickup trucks line the tree line.",
+        ("bba_venue", "west"): "A row of horse stalls in the back serves as the locker room. Blankets hang from the rafters for privacy.",
+        ("bba_locker", "east"): "Through the stalls you can see the ring under a single bare bulb. The crowd is rowdy.",
+        ("bba_parking", "north"): "Interstate 20 stretches west toward Texas and east toward Mississippi.",
+        ("bba_road", "south"): "The muddy field behind the tin-roofed barn. Mosquitoes patrol the humid air.",
+    },
 }
 
 # ============================================================
@@ -112,7 +122,8 @@ BACKYARD_TERRITORIES["psc"] = {
                 "A posterboard sign duct-taped to a sawhorse reads: "
                 "'PSC WRESTLING — ADMISSION $5 — KIDS FREE'. A few dozen "
                 "cars sit in the lot. Someone's selling boiled peanuts from "
-                "the tailgate of a station wagon."
+                "the tailgate of a station wagon.\n\n"
+                "|wExits: |nsouth|w to the venue, |nnorth|w to the road.|n"
             ),
         },
         {
@@ -129,7 +140,9 @@ BACKYARD_TERRITORIES["psc"] = {
                 "The crowd skews older — people who remember watching TBS "
                 "studio wrestling. They know what good work looks like and "
                 "they expect it. National TV territory Georgia is just up "
-                "I-75, and scouts from TBS sometimes pass through Macon."
+                "I-75, and scouts from TBS sometimes pass through Macon.\n\n"
+                "Type |wcard|n to see tonight's lineup. |wwrestle <name>|n to get in the ring.\n\n"
+                "|wExits: |nnorth|w to the parking lot, |nwest|w to the locker room.|n"
             ),
         },
         {
@@ -144,7 +157,8 @@ BACKYARD_TERRITORIES["psc"] = {
                 "table holds rolls of athletic tape and a first aid kit.\n\n"
                 "The boys here are talkers — PSC is a promo territory. "
                 "If you can work the mic, you'll get noticed. If you can't, "
-                "you'll spend every show in the opener."
+                "you'll spend every show in the opener.\n\n"
+                "|wExits: |neast|w back to the arena.|n"
             ),
         },
         {
@@ -165,15 +179,21 @@ BACKYARD_TERRITORIES["psc"] = {
         },
     ],
     "exits": [
-        ("parking", "psc_parking", "psc_venue"),
-        ("hall", "psc_parking", "psc_venue"),
-        ("locker", "psc_venue", "psc_locker"),
-        ("kitchen", "psc_venue", "psc_locker"),
-        ("ring", "psc_locker", "psc_venue"),
-        ("out", "psc_venue", "psc_parking"),
-        ("road", "psc_parking", "psc_road"),
-        ("back", "psc_road", "psc_parking"),
+        ("south;s", "psc_parking", "psc_venue"),
+        ("north;n", "psc_venue", "psc_parking"),
+        ("west;w", "psc_venue", "psc_locker"),
+        ("east;e", "psc_locker", "psc_venue"),
+        ("north;n", "psc_parking", "psc_road"),
+        ("south;s", "psc_road", "psc_parking"),
     ],
+    "exit_descs": {
+        ("psc_parking", "south"): "Through the door you can see the American Legion hall — a decent ring bought from a defunct GCW show.",
+        ("psc_venue", "north"): "The door leads out to the cracked asphalt lot. Someone's selling boiled peanuts from a tailgate.",
+        ("psc_venue", "west"): "The Legion hall kitchen serves as the locker room. Wrestlers change between the sink and the walk-in cooler.",
+        ("psc_locker", "east"): "Through the kitchen door you can see the ring and the crowd of old-school TBS wrestling fans.",
+        ("psc_parking", "north"): "Interstate 75 runs north to Atlanta and the Georgia territory — national TV, TBS studios.",
+        ("psc_road", "south"): "The cracked asphalt lot behind the American Legion hall. Peach trees line the fence.",
+    },
 }
 
 # ============================================================
@@ -199,7 +219,8 @@ BACKYARD_TERRITORIES["gsg"] = {
                 "makes this the most competitive backyard fed in the game. "
                 "WWF scouts have been known to drive down from the city. "
                 "A hand-lettered sign in the window reads: 'GSG — LIVE "
-                "WRESTLING — FRIDAY NIGHTS'."
+                "WRESTLING — FRIDAY NIGHTS'.\n\n"
+                "|wExits: |nsouth|w to the venue, |nnorth|w to the road.|n"
             ),
         },
         {
@@ -217,7 +238,9 @@ BACKYARD_TERRITORIES["gsg"] = {
                 "business — smart marks who'll chant 'boring' if you rest "
                 "too long. A VHS camera on a tripod captures every show. "
                 "Larry Sharpton from the Beast Works sometimes sends a "
-                "student to scout."
+                "student to scout.\n\n"
+                "Type |wcard|n to see tonight's lineup. |wwrestle <name>|n to get in the ring.\n\n"
+                "|wExits: |nnorth|w to the parking lot, |nwest|w to the locker room.|n"
             ),
         },
         {
@@ -232,7 +255,8 @@ BACKYARD_TERRITORIES["gsg"] = {
                 "Competition here is cutthroat — everyone knows the Beast "
                 "Works and WWF are close. Wrestlers sabotage each other's "
                 "gear, steal each other's spots, and politic constantly. "
-                "Welcome to the Northeast."
+                "Welcome to the Northeast.\n\n"
+                "|wExits: |neast|w back to the arena.|n"
             ),
         },
         {
@@ -253,15 +277,21 @@ BACKYARD_TERRITORIES["gsg"] = {
         },
     ],
     "exits": [
-        ("parking", "gsg_parking", "gsg_venue"),
-        ("storefront", "gsg_parking", "gsg_venue"),
-        ("locker", "gsg_venue", "gsg_locker"),
-        ("back", "gsg_venue", "gsg_locker"),
-        ("ring", "gsg_locker", "gsg_venue"),
-        ("out", "gsg_venue", "gsg_parking"),
-        ("road", "gsg_parking", "gsg_road"),
-        ("back", "gsg_road", "gsg_parking"),
+        ("south;s", "gsg_parking", "gsg_venue"),
+        ("north;n", "gsg_venue", "gsg_parking"),
+        ("west;w", "gsg_venue", "gsg_locker"),
+        ("east;e", "gsg_locker", "gsg_venue"),
+        ("north;n", "gsg_parking", "gsg_road"),
+        ("south;s", "gsg_road", "gsg_parking"),
     ],
+    "exit_descs": {
+        ("gsg_parking", "south"): "Through the storefront window you can see the gutted retail space — a ring jammed into the center, fluorescent lights buzzing.",
+        ("gsg_venue", "north"): "The storefront door leads to the strip mall parking lot. A hand-lettered sign reads: 'GSG — LIVE WRESTLING'.",
+        ("gsg_venue", "west"): "The back room of the storefront. Old retail shelving holds duffel bags and gear.",
+        ("gsg_locker", "east"): "Through the doorway you can see the ring and the Jersey crowd who'll chant 'boring' if you rest too long.",
+        ("gsg_parking", "north"): "Route 55 heads north toward the Turnpike and eventually New York City — Madison Square Garden.",
+        ("gsg_road", "south"): "The strip mall parking lot in Vineland. GSG runs out of a rented storefront.",
+    },
 }
 
 # ============================================================
@@ -288,7 +318,8 @@ BACKYARD_TERRITORIES["lsu"] = {
                 "NO RULES, NO SCRIPT'. The Lone Star Underground has no "
                 "training school pipeline — you either get spotted by "
                 "World Class territory or you sink. Sink or swim, Texas "
-                "style."
+                "style.\n\n"
+                "|wExits: |nsouth|w to the venue, |nnorth|w to the road.|n"
             ),
         },
         {
@@ -305,7 +336,9 @@ BACKYARD_TERRITORIES["lsu"] = {
                 "wrestling fans are emotionally invested — they'll throw "
                 "beer at heels and chant for faces. World Class territory "
                 "in Dallas is just 30 miles east, and the Von Adler family "
-                "has eyes everywhere."
+                "has eyes everywhere.\n\n"
+                "Type |wcard|n to see tonight's lineup. |wwrestle <name>|n to get in the ring.\n\n"
+                "|wExits: |nnorth|w to the parking lot, |nwest|w to the locker room.|n"
             ),
         },
         {
@@ -321,7 +354,8 @@ BACKYARD_TERRITORIES["lsu"] = {
                 "No training school feeds into LSU. If you're here, you "
                 "learned on your own or from someone's backyard. The good "
                 "news: World Class territory scouts regularly. The bad "
-                "news: they only want the best."
+                "news: they only want the best.\n\n"
+                "|wExits: |neast|w back to the arena.|n"
             ),
         },
         {
@@ -342,13 +376,19 @@ BACKYARD_TERRITORIES["lsu"] = {
         },
     ],
     "exits": [
-        ("parking", "lsu_parking", "lsu_venue"),
-        ("arena", "lsu_parking", "lsu_venue"),
-        ("locker", "lsu_venue", "lsu_locker"),
-        ("tack", "lsu_venue", "lsu_locker"),
-        ("ring", "lsu_locker", "lsu_venue"),
-        ("out", "lsu_venue", "lsu_parking"),
-        ("road", "lsu_parking", "lsu_road"),
-        ("back", "lsu_road", "lsu_parking"),
+        ("south;s", "lsu_parking", "lsu_venue"),
+        ("north;n", "lsu_venue", "lsu_parking"),
+        ("west;w", "lsu_venue", "lsu_locker"),
+        ("east;e", "lsu_locker", "lsu_venue"),
+        ("north;n", "lsu_parking", "lsu_road"),
+        ("south;s", "lsu_road", "lsu_parking"),
     ],
+    "exit_descs": {
+        ("lsu_parking", "south"): "Through the wide doors you can see the converted livestock auction barn — the ring sits where cattle used to be sold.",
+        ("lsu_venue", "north"): "The barn doors open to the dusty lot behind the Stockyards. Pickup trucks with longhorn ornaments crowd the unpaved lot.",
+        ("lsu_venue", "west"): "The tack room where saddles used to hang now holds duffel bags and wrestling boots.",
+        ("lsu_locker", "east"): "Through the tack room door you can see the ring and the loud, drunk Texas crowd.",
+        ("lsu_parking", "north"): "Interstate 30 heads east to Dallas and World Class territory — the Sportatorium, the Von Adlers.",
+        ("lsu_road", "south"): "The dusty lot behind the Stockyards, Fort Worth. Texas heat radiates from the dirt.",
+    },
 }

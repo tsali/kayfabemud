@@ -37,7 +37,8 @@ TERRITORIES["fhwa"] = {
                 "reads: 'FHWA WRESTLING TONIGHT — $3 ADMISSION'. You can hear a "
                 "crowd of maybe forty people inside, stamping on metal bleachers.\n\n"
                 "A cooler full of off-brand soda sits by the back door. Someone's "
-                "kid is doing backflips off a stack of pallets."
+                "kid is doing backflips off a stack of pallets.\n\n"
+                "|wExits: |nsouth|w to the venue, |nnorth|w to the road.|n"
             ),
         },
         {
@@ -55,7 +56,9 @@ TERRITORIES["fhwa"] = {
                 "An American flag hangs behind the ring. The ceiling is low enough "
                 "that nobody's doing any top-rope moves. The crowd is a mix of "
                 "locals, a few kids, and someone's grandma who thinks this is bingo "
-                "night."
+                "night.\n\n"
+                "Type |wcard|n to see tonight's lineup. |wwrestle <name>|n to get in the ring.\n\n"
+                "|wExits: |nnorth|w to the parking lot, |nwest|w to the locker room.|n"
             ),
         },
         {
@@ -69,7 +72,8 @@ TERRITORIES["fhwa"] = {
                 "full of wrestling gear. A cracked mirror leans against the wall.\n\n"
                 "The other wrestlers — a mix of locals with homemade gimmicks — "
                 "are changing into their gear. Someone's taping their fists with "
-                "electrical tape."
+                "electrical tape.\n\n"
+                "|wExits: |neast|w back to the arena.|n"
             ),
         },
         {
@@ -89,15 +93,21 @@ TERRITORIES["fhwa"] = {
         },
     ],
     "exits": [
-        ("parking", "fhwa_parking", "fhwa_venue"),
-        ("venue", "fhwa_venue", "fhwa_parking"),
-        ("hall", "fhwa_parking", "fhwa_venue"),
-        ("locker", "fhwa_venue", "fhwa_locker"),
-        ("ring", "fhwa_locker", "fhwa_venue"),
-        ("out", "fhwa_venue", "fhwa_parking"),
-        ("road", "fhwa_parking", "fhwa_road"),
-        ("back", "fhwa_road", "fhwa_parking"),
+        ("south;s", "fhwa_parking", "fhwa_venue"),
+        ("north;n", "fhwa_venue", "fhwa_parking"),
+        ("west;w", "fhwa_venue", "fhwa_locker"),
+        ("east;e", "fhwa_locker", "fhwa_venue"),
+        ("north;n", "fhwa_parking", "fhwa_road"),
+        ("south;s", "fhwa_road", "fhwa_parking"),
     ],
+    "exit_descs": {
+        ("fhwa_parking", "south"): "Through the back door you can see the VFW hall — a low-ceilinged room with a 12-foot ring in the middle.",
+        ("fhwa_venue", "north"): "The back door leads out to the gravel parking lot. Pickup trucks idle under a hand-painted plywood sign.",
+        ("fhwa_venue", "west"): "A doorway leads to the VFW storage room where wrestlers are changing into their gear.",
+        ("fhwa_locker", "east"): "Through the doorway you can see the ring and the crowd of forty on metal bleachers.",
+        ("fhwa_parking", "north"): "Route 61 stretches north toward Louisville and south toward nowhere. Your car idles at the intersection.",
+        ("fhwa_road", "south"): "The gravel lot behind the VFW hall. A hand-painted sign reads: 'FHWA WRESTLING TONIGHT'.",
+    },
 }
 
 TERRITORIES["gccw"] = {
@@ -117,7 +127,8 @@ TERRITORIES["gccw"] = {
                 "Spanish moss hangs from a live oak at the edge of the lot.\n\n"
                 "A hand-lettered banner reads: 'GCCW — SATURDAY NIGHT WARS'. "
                 "The building looks like it used to be an auto body shop. A few "
-                "rusty cars and one lifted truck sit in the gravel."
+                "rusty cars and one lifted truck sit in the gravel.\n\n"
+                "|wExits: |nsouth|w to the venue, |nnorth|w to the road.|n"
             ),
         },
         {
@@ -134,7 +145,9 @@ TERRITORIES["gccw"] = {
                 "Plastic chairs and wooden bleachers line the walls. Industrial "
                 "fans push the hot Florida air around without actually cooling "
                 "anything. A VHS camcorder on a tripod records every show — "
-                "these tapes sometimes find their way to the right people."
+                "these tapes sometimes find their way to the right people.\n\n"
+                "Type |wcard|n to see tonight's lineup. |wwrestle <name>|n to get in the ring.\n\n"
+                "|wExits: |nnorth|w to the parking lot, |nwest|w to the locker room.|n"
             ),
         },
         {
@@ -148,7 +161,8 @@ TERRITORIES["gccw"] = {
                 "the wall. 'The Cage' is what the boys call it.\n\n"
                 "A cooler of water bottles sits on the floor (no Gatorade — "
                 "that's for the main event guys). A whiteboard on the wall shows "
-                "tonight's card in dry-erase marker."
+                "tonight's card in dry-erase marker.\n\n"
+                "|wExits: |neast|w back to the arena.|n"
             ),
         },
         {
@@ -169,16 +183,21 @@ TERRITORIES["gccw"] = {
         },
     ],
     "exits": [
-        ("parking", "gccw_parking", "gccw_venue"),
-        ("venue", "gccw_venue", "gccw_parking"),
-        ("shop", "gccw_parking", "gccw_venue"),
-        ("locker", "gccw_venue", "gccw_locker"),
-        ("cage", "gccw_venue", "gccw_locker"),
-        ("ring", "gccw_locker", "gccw_venue"),
-        ("out", "gccw_venue", "gccw_parking"),
-        ("road", "gccw_parking", "gccw_road"),
-        ("back", "gccw_road", "gccw_parking"),
+        ("south;s", "gccw_parking", "gccw_venue"),
+        ("north;n", "gccw_venue", "gccw_parking"),
+        ("west;w", "gccw_venue", "gccw_locker"),
+        ("east;e", "gccw_locker", "gccw_venue"),
+        ("north;n", "gccw_parking", "gccw_road"),
+        ("south;s", "gccw_road", "gccw_parking"),
     ],
+    "exit_descs": {
+        ("gccw_parking", "south"): "Through the open bay doors you can see the converted auto body shop — a regulation-size ring sits inside.",
+        ("gccw_venue", "north"): "The bay doors open to the sandy parking lot. Spanish moss hangs from the live oak at the edge.",
+        ("gccw_venue", "west"): "A chain-link cage in the back corner — the locker area the boys call 'The Cage'.",
+        ("gccw_locker", "east"): "Through the chain-link you can see the ring and the crowd on plastic chairs and wooden bleachers.",
+        ("gccw_parking", "north"): "Highway 98 runs along the Gulf Coast, connecting Pensacola to the rest of the panhandle.",
+        ("gccw_road", "south"): "The sandy parking lot behind the corrugated metal building. The Gulf humidity hits you like a wall.",
+    },
 }
 
 # ============================================================
@@ -342,31 +361,28 @@ TERRITORIES["pensacola"] = {
         },
     ],
     "exits": [
-        ("center", "pens_entrance", "pens_floor"),
-        ("inside", "pens_entrance", "pens_floor"),
-        ("out", "pens_floor", "pens_entrance"),
-        ("entrance", "pens_floor", "pens_entrance"),
-        ("pit", "pens_floor", "pens_pit"),
-        ("floor", "pens_pit", "pens_floor"),
-        ("ring", "pens_floor", "pens_ring"),
-        ("gym", "pens_ring", "pens_floor"),
-        ("afa", "pens_entrance", "pens_afa_house"),
-        ("house", "pens_entrance", "pens_afa_house"),
-        ("back", "pens_afa_house", "pens_entrance"),
-        ("civic", "pens_entrance", "pens_civic"),
-        ("arena", "pens_entrance", "pens_civic"),
-        ("entrance", "pens_civic", "pens_entrance"),
-        ("boardwalk", "pens_entrance", "pens_boardwalk"),
-        ("beach", "pens_entrance", "pens_boardwalk"),
-        ("back", "pens_boardwalk", "pens_entrance"),
-        ("tiki", "pens_boardwalk", "pens_tiki"),
-        ("bar", "pens_boardwalk", "pens_tiki"),
-        ("boardwalk", "pens_tiki", "pens_boardwalk"),
-        ("motel", "pens_boardwalk", "pens_motel"),
-        ("boardwalk", "pens_motel", "pens_boardwalk"),
-        ("road", "pens_entrance", "pens_road"),
-        ("highway", "pens_entrance", "pens_road"),
-        ("back", "pens_road", "pens_entrance"),
+        # Entrance row: Afa's House - Entrance - Civic Center
+        ("north;n", "pens_entrance", "pens_road"),
+        ("south;s", "pens_road", "pens_entrance"),
+        ("south;s", "pens_entrance", "pens_floor"),
+        ("north;n", "pens_floor", "pens_entrance"),
+        ("west;w", "pens_entrance", "pens_afa_house"),
+        ("east;e", "pens_afa_house", "pens_entrance"),
+        ("east;e", "pens_entrance", "pens_civic"),
+        ("west;w", "pens_civic", "pens_entrance"),
+        # Floor row: Pit - Floor - Ring
+        ("west;w", "pens_floor", "pens_pit"),
+        ("east;e", "pens_pit", "pens_floor"),
+        ("east;e", "pens_floor", "pens_ring"),
+        ("west;w", "pens_ring", "pens_floor"),
+        # Boardwalk row: Boardwalk - Tiki Bar
+        ("south;s", "pens_floor", "pens_boardwalk"),
+        ("north;n", "pens_boardwalk", "pens_floor"),
+        ("east;e", "pens_boardwalk", "pens_tiki"),
+        ("west;w", "pens_tiki", "pens_boardwalk"),
+        # Motel south of boardwalk
+        ("south;s", "pens_boardwalk", "pens_motel"),
+        ("north;n", "pens_motel", "pens_boardwalk"),
     ],
 }
 
@@ -496,24 +512,22 @@ TERRITORIES["memphis"] = {
         },
     ],
     "exits": [
-        ("backstage", "mem_arena", "mem_backstage"),
-        ("arena", "mem_backstage", "mem_arena"),
-        ("ring", "mem_backstage", "mem_arena"),
-        ("gym", "mem_arena", "mem_gym"),
-        ("arena", "mem_gym", "mem_arena"),
-        ("coliseum", "mem_gym", "mem_arena"),
-        ("beale", "mem_arena", "mem_beale"),
-        ("street", "mem_arena", "mem_beale"),
-        ("arena", "mem_beale", "mem_arena"),
-        ("coliseum", "mem_beale", "mem_arena"),
-        ("studio", "mem_arena", "mem_studio"),
-        ("tv", "mem_arena", "mem_studio"),
-        ("arena", "mem_studio", "mem_arena"),
-        ("office", "mem_backstage", "mem_office"),
-        ("backstage", "mem_office", "mem_backstage"),
-        ("travel", "mem_arena", "mem_travel"),
-        ("road", "mem_arena", "mem_travel"),
-        ("back", "mem_travel", "mem_arena"),
+        # Travel north of arena
+        ("north;n", "mem_arena", "mem_travel"),
+        ("south;s", "mem_travel", "mem_arena"),
+        # Gym west, Beale east of arena
+        ("west;w", "mem_arena", "mem_gym"),
+        ("east;e", "mem_gym", "mem_arena"),
+        ("east;e", "mem_arena", "mem_beale"),
+        ("west;w", "mem_beale", "mem_arena"),
+        # Backstage south of arena
+        ("south;s", "mem_arena", "mem_backstage"),
+        ("north;n", "mem_backstage", "mem_arena"),
+        # Office west, Studio east of backstage
+        ("west;w", "mem_backstage", "mem_office"),
+        ("east;e", "mem_office", "mem_backstage"),
+        ("east;e", "mem_backstage", "mem_studio"),
+        ("west;w", "mem_studio", "mem_backstage"),
     ],
 }
 
