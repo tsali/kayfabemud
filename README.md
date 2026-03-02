@@ -3,7 +3,7 @@
 A professional wrestling territories MUD built on [Evennia 5.0.1](https://www.evennia.com/), designed to run behind a Mystic BBS rlogin bridge. Set in an alternate timeline where all wrestling eras coexist — from backyard VFW hall brawls to headlining Madison Square Garden.
 
 **Play now on BBS PEPSICOLA:**
-- Telnet: `bbs.cultofjames.org` port `23`
+- Telnet: `bbs.cultofjames.org` port `2023`
 - TLS: `bbs.cultofjames.org` port `992`
 - From the BBS main menu, press **D** for Doors, then **K** for Kayfabe
 
