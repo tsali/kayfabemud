@@ -251,13 +251,13 @@ class CmdRecord(Command):
 
 class CmdSkipTutorial(Command):
     """
-    Skip the new player tutorial.
+    Skip Learning the Ropes.
 
     Usage:
         skip
 
-    Skips the guided tutorial match and drops you right into
-    the game. Only works during the tutorial.
+    Skips the guided tutorial match and moves on to picking
+    your starting fed. Only works during the tutorial.
     """
     key = "skip"
     locks = "cmd:all()"

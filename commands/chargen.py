@@ -447,7 +447,7 @@ def node_alignment(caller, raw_string, **kwargs):
 
 def _set_alignment(caller, raw_string, align="Face", **kwargs):
     caller.ndb._menutree.alignment = align
-    return "node_starting_fed"
+    return "node_finisher"
 
 
 def node_starting_fed(caller, raw_string, **kwargs):
@@ -482,11 +482,6 @@ def node_starting_fed(caller, raw_string, **kwargs):
             "goto": (_set_starting_fed, {"fed_key": key}),
         })
     return text, options
-
-
-def _set_starting_fed(caller, raw_string, fed_key="fhwa", **kwargs):
-    caller.ndb._menutree.starting_fed = fed_key
-    return "node_finisher"
 
 
 def node_finisher(caller, raw_string, **kwargs):
@@ -567,8 +562,6 @@ def node_confirm(caller, raw_string, **kwargs):
     else:
         text += "|rHeel|n\n"
 
-    fed = STARTING_FEDS.get(menu.starting_fed, {})
-    text += f"  Starting Fed: |c{fed.get('abbrev', '???')}|n — {fed.get('name', '???')}\n"
     text += f"  Finisher:   |c{menu.finisher_name}|n ({menu.finisher_type})\n\n"
 
     text += "  |wStats:|n\n"
@@ -590,7 +583,7 @@ def node_confirm(caller, raw_string, **kwargs):
 
 
 def node_finalize(caller, raw_string, **kwargs):
-    """Apply all chargen choices to the character."""
+    """Apply all chargen choices to the character, then launch tutorial."""
     menu = caller.ndb._menutree
 
     # Set the ring name as the character key
@@ -605,9 +598,7 @@ def node_finalize(caller, raw_string, **kwargs):
     caller.db.finisher_name = menu.finisher_name
     caller.db.finisher_type = menu.finisher_type
 
-    # Starting fed
-    fed_key = menu.starting_fed
-    caller.db.territory = fed_key
+    # No territory yet — chosen after tutorial
     caller.db.tier = 1
 
     # Initialize traits
@@ -615,18 +606,54 @@ def node_finalize(caller, raw_string, **kwargs):
     caller.apply_style_bonuses()
     caller.apply_bonus_points(menu.stat_alloc)
 
-    # Mark chargen complete
+    # Mark chargen complete (so commands work during tutorial)
     caller.db.chargen_complete = True
 
-    # Move to starting location
+    text = (
+        "\n|w========================================|n\n"
+        f"|w  {menu.ring_name} IS READY TO LEARN|n\n"
+        "|w========================================|n\n\n"
+        "Before you head out to your first fed, let's make sure\n"
+        "you know how to work a match.\n\n"
+        "Time to learn the ropes.\n"
+    )
+
+    # Launch tutorial — it will resume chargen (starting fed pick) when done
+    _start_tutorial(caller)
+
+    options = None  # Exit menu — tutorial takes over
+    return text, options
+
+
+def node_starting_fed_intro(caller, raw_string, **kwargs):
+    """
+    Post-tutorial entry point. Just redirects to starting fed selection.
+    This exists so the EvMenu launched from tutorial.py has a clean entry.
+    """
+    return node_starting_fed(caller, raw_string, **kwargs)
+
+
+def _set_starting_fed(caller, raw_string, fed_key="fhwa", **kwargs):
+    caller.ndb._menutree.starting_fed = fed_key
+    return "node_apply_fed"
+
+
+def node_apply_fed(caller, raw_string, **kwargs):
+    """Apply the starting fed choice and send the player there."""
+    menu = caller.ndb._menutree
+    fed_key = menu.starting_fed
+
+    caller.db.territory = fed_key
     fed_data = STARTING_FEDS.get(fed_key, {})
+
+    # Move to starting location
     start_room = _find_start_room(fed_key)
     if start_room:
         caller.move_to(start_room, quiet=True)
 
     text = (
         "\n|w========================================|n\n"
-        f"|w  {menu.ring_name} HAS ENTERED THE BUILDING|n\n"
+        f"|w  {caller.key} HAS ENTERED THE BUILDING|n\n"
         "|w========================================|n\n\n"
         f"You step out of a beat-up car into the parking lot of\n"
         f"{fed_data.get('name', 'a local wrestling fed')} in\n"
@@ -646,10 +673,7 @@ def node_finalize(caller, raw_string, **kwargs):
         "  |whelp kayfabe|n    - Full game guide\n"
     )
 
-    # Launch tutorial
-    _start_tutorial(caller)
-
-    options = None  # Exit menu
+    options = None  # Exit menu — player is in the world
     return text, options
 
 

@@ -1,7 +1,8 @@
 """
-Kayfabe: Protect the Business — Tutorial System.
+Kayfabe: Protect the Business — Learning the Ropes (Tutorial).
 
-After chargen, new players go through a guided tutorial match:
+After chargen confirm (before picking a starting fed), new players
+go through a guided tutorial match:
 1. "Try `work`" — basic attack
 2. "Try `sell`" — selling for opponent
 3. "`hope`" — hope spot
@@ -10,7 +11,7 @@ After chargen, new players go through a guided tutorial match:
 
 Tutorial opponent: "The Training Dummy" (can't lose).
 `skip` command to bypass.
-After tutorial: teleport to chosen starting fed.
+After tutorial: chargen continues with starting fed selection.
 """
 
 import random
@@ -23,10 +24,10 @@ TUTORIAL_STEPS = [
         "phase": "opening",
         "command": "work",
         "prompt": (
-            "\n|w=== TUTORIAL: THE BASICS ===|n\n\n"
+            "\n|w=== LEARNING THE ROPES ===|n\n\n"
             "Welcome to your first match! You're in the ring with\n"
             "|cThe Training Dummy|n — a practice partner who'll help\n"
-            "you learn the ropes.\n\n"
+            "you learn the ropes before you head out to your first fed.\n\n"
             "In wrestling, matches have 5 phases:\n"
             "  |wOpening|n -> |rHeat|n -> |yHope|n -> |gComeback|n -> |wFinish|n\n\n"
             "We're in the |wOpening|n phase. Try attacking!\n\n"
@@ -182,7 +183,7 @@ class TutorialMatchScript(DefaultScript):
             )
 
     def _complete_tutorial(self, wrestler):
-        """End the tutorial and send player to their starting fed."""
+        """End the tutorial and continue chargen (starting fed selection)."""
         self.db.completed = True
 
         # Award small XP bonus
@@ -190,7 +191,7 @@ class TutorialMatchScript(DefaultScript):
 
         wrestler.msg(
             f"\n|w{'=' * 44}|n\n"
-            f"|w  TUTORIAL COMPLETE!|n\n"
+            f"|w  YOU LEARNED THE ROPES!|n\n"
             f"|w{'=' * 44}|n\n"
             f"  You've learned the basics of working a match:\n"
             f"  |wwork|n     — Execute a move\n"
@@ -199,9 +200,7 @@ class TutorialMatchScript(DefaultScript):
             f"  |wcomeback|n — Mount your comeback\n"
             f"  |wfinish|n   — Hit your finisher to win\n\n"
             f"  Bonus: |c+10 XP|n for completing the tutorial.\n\n"
-            f"  There's much more to learn — promos, training, economy,\n"
-            f"  factions, championships — but you'll pick it up as you go.\n\n"
-            f"  Type |whelp kayfabe|n anytime for the full guide.\n"
+            f"  Now let's pick where you're going to start your career.\n"
             f"|w{'=' * 44}|n\n"
         )
 
@@ -209,11 +208,27 @@ class TutorialMatchScript(DefaultScript):
         wrestler.ndb.in_tutorial = False
         self.stop()
 
+        # Continue chargen — launch starting fed selection
+        _resume_chargen_after_tutorial(wrestler)
+
     def skip_tutorial(self):
         """Skip the tutorial entirely."""
         wrestler = self.db.wrestler
         if wrestler:
             wrestler.msg("|yTutorial skipped. You're on your own, kid.|n")
             wrestler.ndb.in_tutorial = False
+            # Continue chargen — launch starting fed selection
+            _resume_chargen_after_tutorial(wrestler)
         self.db.completed = True
         self.stop()
+
+
+def _resume_chargen_after_tutorial(wrestler):
+    """After tutorial completes or is skipped, launch the starting fed EvMenu."""
+    from evennia.utils.evmenu import EvMenu
+    EvMenu(
+        wrestler,
+        "commands.chargen",
+        startnode="node_starting_fed",
+        cmd_on_exit=None,
+    )
