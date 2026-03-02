@@ -111,7 +111,7 @@ def node_ring_name(caller, raw_string, **kwargs):
         "----------\n"
         "What's your ring name? This is what the crowd will chant,\n"
         "what the announcer will call, and what'll be on your tights.\n\n"
-        "Enter your ring name:"
+        "Enter your ring name:\n> "
     )
     options = {"key": "_default", "goto": _set_ring_name}
     return text, options
@@ -138,7 +138,7 @@ def node_real_name(caller, raw_string, **kwargs):
         f"Ring name: |c{caller.ndb._menutree.ring_name}|n\n\n"
         f"What's your shoot name? The name on your driver's license.\n"
         f"The boys in the back will know you by this.\n\n"
-        f"Enter your real name:"
+        f"Enter your real name:\n> "
     )
     options = {"key": "_default", "goto": _set_real_name}
     return text, options
@@ -165,7 +165,7 @@ def node_hometown(caller, raw_string, **kwargs):
         f"Real name: |c{caller.ndb._menutree.real_name}|n\n\n"
         f"Where are you from? The announcer needs to know.\n"
         f"\"Hailing from...\"\n\n"
-        f"Enter your hometown (city, state/country):"
+        f"Enter your hometown (city, state/country):\n> "
     )
     options = {"key": "_default", "goto": _set_hometown}
     return text, options
@@ -310,6 +310,7 @@ def node_stats(caller, raw_string, **kwargs):
         f"  Example: |wstr 5|n — adds 5 to Strength\n"
         f"  Type |wrandom|n to let fate decide your stats.\n"
         f"  Type |wreset|n to start over, |wdone|n when finished.\n"
+        f"> "
     )
 
     options = {"key": "_default", "goto": _process_stat_input}
@@ -451,36 +452,56 @@ def _set_alignment(caller, raw_string, align="Face", **kwargs):
 
 
 def node_starting_fed(caller, raw_string, **kwargs):
-    """Choose starting backyard fed."""
+    """Choose starting backyard fed — compact list."""
     text = (
         "\n|wSTARTING FED|n\n"
         "-------------\n"
-        "Every legend started somewhere. Pick your backyard fed.\n"
-        "This is the most important early-game choice — it determines\n"
-        "your pipeline to the big time.\n\n"
+        "Every legend started somewhere. Pick your backyard fed.\n\n"
     )
 
     fed_keys = list(STARTING_FEDS.keys())
     for i, key in enumerate(fed_keys, 1):
         fed = STARTING_FEDS[key]
-        text += (
-            f"  |w{i}|n. |c{fed['abbrev']}|n — {fed['name']}\n"
-            f"     Location: {fed['location']}\n"
-            f"     Nearest school: {fed['nearest_school']}\n"
-            f"     Nearest territory: {fed['nearest_territory']}\n"
-            f"     |gPros|n: {fed['pros']}\n"
-            f"     |rCons|n: {fed['cons']}\n\n"
-        )
+        text += f"  |w{i}|n. |c{fed['abbrev']}|n — {fed['location']}\n"
 
-    text += "Choose your starting fed (1-6):"
+    text += "\nEnter a number to learn more:\n> "
 
     options = []
     for i, key in enumerate(fed_keys, 1):
         options.append({
             "key": str(i),
             "desc": STARTING_FEDS[key]["abbrev"],
-            "goto": (_set_starting_fed, {"fed_key": key}),
+            "goto": (_view_fed_detail, {"fed_key": key}),
         })
+    return text, options
+
+
+def _view_fed_detail(caller, raw_string, fed_key="fhwa", **kwargs):
+    """Store which fed to show detail for, go to detail node."""
+    caller.ndb._menutree.viewing_fed = fed_key
+    return "node_fed_detail"
+
+
+def node_fed_detail(caller, raw_string, **kwargs):
+    """Show full detail for one fed, with confirm or go back."""
+    fed_key = caller.ndb._menutree.viewing_fed
+    fed = STARTING_FEDS.get(fed_key, {})
+
+    text = (
+        f"\n|w{fed.get('abbrev', '???')}|n — {fed.get('name', '???')}\n"
+        f"{'=' * 40}\n"
+        f"  Location:          {fed.get('location', '???')}\n"
+        f"  Nearest School:    {fed.get('nearest_school', '???')}\n"
+        f"  Nearest Territory: {fed.get('nearest_territory', '???')}\n\n"
+        f"  |gPros|n: {fed.get('pros', '???')}\n"
+        f"  |rCons|n: {fed.get('cons', '???')}\n\n"
+        f"Start your career here?"
+    )
+
+    options = (
+        {"key": "1", "desc": "Yes, this is my fed", "goto": (_set_starting_fed, {"fed_key": fed_key})},
+        {"key": "2", "desc": "No, go back", "goto": "node_starting_fed"},
+    )
     return text, options
 
 
@@ -493,7 +514,7 @@ def node_finisher(caller, raw_string, **kwargs):
         "What's yours called?\n\n"
         "Examples: The Devastator, Gulf Coast Slam, Lone Star Lariat,\n"
         "Death Valley Driver, The Blackout, etc.\n\n"
-        "Enter your finisher name:"
+        "Enter your finisher name:\n> "
     )
     options = {"key": "_default", "goto": _set_finisher}
     return text, options

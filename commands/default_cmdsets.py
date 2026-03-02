@@ -51,7 +51,7 @@ from commands.lodging import CmdRest, CmdBoard, CmdPost, CmdBuyHouse, CmdGoHome,
 from commands.brawl import CmdBrawl
 
 # Character selection / creation
-from commands.charselect import CmdCharSelect, CmdCharCreate
+from commands.charselect import CmdCharSelect, CmdCharCreate, CmdCharDelete
 
 # System overrides
 from commands.command import CmdNoMatch, CmdNoInput
@@ -144,6 +144,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         # Character management
         self.add(CmdCharSelect())
         self.add(CmdCharCreate())
+        self.add(CmdCharDelete())
 
         # Map (ASCII ingame map from compass exits)
         self.add(CmdMap())

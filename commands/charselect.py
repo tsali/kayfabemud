@@ -91,6 +91,90 @@ class CmdCharSelect(Command):
             logger.log_err(f"Character switch failed for {account.key}: {e}")
 
 
+class CmdCharDelete(Command):
+    """
+    Delete a wrestler from your account.
+
+    Usage:
+      chardelete
+      chardelete <number>
+      chardelete <number> confirm
+
+    Lists your wrestlers and lets you delete one. You cannot delete
+    the wrestler you are currently playing — switch first.
+    Requires typing 'chardelete <number> confirm' to actually delete.
+    """
+
+    key = "chardelete"
+    aliases = ["delchar"]
+    locks = "cmd:all()"
+    help_category = "General"
+
+    def func(self):
+        account = self.caller.account
+        if not account:
+            self.caller.msg("No account found.")
+            return
+
+        chars = [c for c in account.characters if c.access(account, "puppet")]
+        if not chars:
+            self.caller.msg("You have no wrestlers.")
+            return
+
+        args = self.args.strip().split()
+
+        if not args:
+            # Show the list
+            current = self.caller
+            msg = "\n|w=== DELETE A WRESTLER ===|n\n\n"
+            for i, char in enumerate(chars, 1):
+                marker = " |g<-- current|n" if char == current else ""
+                if char.db.chargen_complete:
+                    territory = (char.db.territory or "???").upper()
+                    msg += f"  |w{i}|n. |c{char.key}|n ({territory}){marker}\n"
+                else:
+                    msg += f"  |w{i}|n. |c{char.key}|n |y(chargen incomplete)|n{marker}\n"
+            msg += (
+                f"\n  Type |wchardelete <number>|n to select.\n"
+                f"  |rThis is permanent!|n\n"
+            )
+            self.caller.msg(msg)
+            return
+
+        # Parse the number
+        try:
+            idx = int(args[0]) - 1
+        except ValueError:
+            self.caller.msg("|rEnter a number.|n")
+            return
+
+        if idx < 0 or idx >= len(chars):
+            self.caller.msg(f"|rChoose 1 through {len(chars)}.|n")
+            return
+
+        target = chars[idx]
+
+        # Can't delete the one you're currently playing
+        if target == self.caller:
+            self.caller.msg("|rYou can't delete the wrestler you're currently playing. Switch first.|n")
+            return
+
+        # Check for confirmation
+        if len(args) < 2 or args[1].lower() != "confirm":
+            self.caller.msg(
+                f"\n|rAre you sure you want to delete |c{target.key}|r?|n\n"
+                f"This is |rpermanent|n and cannot be undone.\n\n"
+                f"Type |wchardelete {args[0]} confirm|n to delete.\n"
+            )
+            return
+
+        # Remove from account's character list, then delete
+        name = target.key
+        account.characters.remove(target)
+        target.delete()
+        self.caller.msg(f"|r{name} has been deleted.|n")
+
+
 class CmdCharCreate(Command):
     """
     Create a new wrestler on your account.

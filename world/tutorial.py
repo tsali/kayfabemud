@@ -32,7 +32,8 @@ TUTORIAL_STEPS = [
             "  |wOpening|n -> |rHeat|n -> |yHope|n -> |gComeback|n -> |wFinish|n\n\n"
             "We're in the |wOpening|n phase. Try attacking!\n\n"
             "Type |wwork|n to execute a wrestling move.\n"
-            "|x(Type |wskip|x to skip the tutorial)|n"
+            "|x(Type |wskip|x to skip the tutorial)|n\n"
+            "> "
         ),
     },
     {
@@ -44,7 +45,8 @@ TUTORIAL_STEPS = [
             "making your opponent look good too. That's called |wselling|n.\n\n"
             "When you |wsell|n, you let your opponent get offense in.\n"
             "This builds crowd heat and match quality.\n\n"
-            "Type |wsell|n to sell for The Training Dummy."
+            "Type |wsell|n to sell for The Training Dummy.\n"
+            "> "
         ),
     },
     {
@@ -55,7 +57,8 @@ TUTORIAL_STEPS = [
             "Now we're in the |rHeat Segment|n. The villain is dominating.\n"
             "But the crowd wants to see a |yHope Spot|n — a brief\n"
             "flash of fight from the hero!\n\n"
-            "Type |whope|n to fire back briefly."
+            "Type |whope|n to fire back briefly.\n"
+            "> "
         ),
     },
     {
@@ -66,7 +69,8 @@ TUTORIAL_STEPS = [
             "Now it's time for |gThe Comeback|n! This is the moment\n"
             "the crowd has been waiting for. You fire up, feed off\n"
             "the energy, and turn the match around!\n\n"
-            "Type |wcomeback|n to fire up!"
+            "Type |wcomeback|n to fire up!\n"
+            "> "
         ),
     },
     {
@@ -76,7 +80,8 @@ TUTORIAL_STEPS = [
             "\n|gYOU'RE FIRED UP! The crowd is going crazy!|n\n\n"
             "This is it — |wThe Finish|n. Time to hit your finisher\n"
             "and pin The Training Dummy!\n\n"
-            "Type |wfinish|n to hit your finisher!"
+            "Type |wfinish|n to hit your finisher!\n"
+            "> "
         ),
     },
 ]
@@ -126,7 +131,8 @@ class TutorialMatchScript(DefaultScript):
         if command_name != current_step["command"]:
             wrestler.msg(
                 f"|yTutorial hint: Try |w{current_step['command']}|y right now.|n\n"
-                f"|x(Type |wskip|x to skip the tutorial)|n"
+                f"|x(Type |wskip|x to skip the tutorial)|n\n"
+                f"> "
             )
             return True
 
