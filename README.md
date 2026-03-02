@@ -5,7 +5,7 @@ A professional wrestling territories MUD built on [Evennia 5.0.1](https://www.ev
 **Play now on BBS PEPSICOLA:**
 - Telnet: `bbs.cultofjames.org` port `23`
 - TLS: `bbs.cultofjames.org` port `992`
-- From the BBS main menu, press **E** to enter Kayfabe
+- From the BBS main menu, press **D** for Doors, then **K** for Kayfabe
 
 ## Overview
 
