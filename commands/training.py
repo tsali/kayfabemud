@@ -253,37 +253,40 @@ class CmdLearn(Command):
         # Parse args: could be "vet name" or "vet name move"
         args = self.args.strip()
 
-        # Try to match a vet by name
+        # Try to match a vet by name (longest match first)
         matched_vet = None
         remaining = ""
+        args_lower = args.lower()
+
+        # Pass 1: full name match at start of args
         for vet in vets:
             vet_lower = vet.key.lower()
-            if args.lower().startswith(vet_lower):
-                matched_vet = vet
-                remaining = args[len(vet_lower):].strip()
-                break
-
-        # Fuzzy match: try partial name matching
-        if not matched_vet:
-            for vet in vets:
-                if vet.key.lower() in args.lower() or args.lower() in vet.key.lower():
-                    # Split remaining
-                    idx = args.lower().find(vet.key.lower())
-                    if idx >= 0:
-                        end = idx + len(vet.key)
-                        remaining = args[end:].strip()
+            if args_lower.startswith(vet_lower):
+                if len(args_lower) == len(vet_lower) or args_lower[len(vet_lower)] == " ":
                     matched_vet = vet
+                    remaining = args[len(vet_lower):].strip()
                     break
 
-        # Last resort: first word(s) matching
+        # Pass 2: try matching any sub-name of the vet (e.g. "afa" matches "Chief Afa Savea")
+        # Prefer longer matches to avoid ambiguity
         if not matched_vet:
-            # Try each vet's first name
+            best_match = None
+            best_len = 0
             for vet in vets:
-                first_name = vet.key.split()[0].lower() if vet.key else ""
-                if args.lower().startswith(first_name) and first_name:
-                    matched_vet = vet
-                    remaining = args[len(first_name):].strip()
-                    break
+                vet_parts = vet.key.lower().split()
+                # Try progressively longer combos from each starting word
+                for start in range(len(vet_parts)):
+                    for end in range(start + 1, len(vet_parts) + 1):
+                        fragment = " ".join(vet_parts[start:end])
+                        if args_lower.startswith(fragment):
+                            after = args_lower[len(fragment):]
+                            if not after or after[0] == " ":
+                                if len(fragment) > best_len:
+                                    best_match = vet
+                                    best_len = len(fragment)
+                                    remaining = args[len(fragment):].strip()
+            if best_match:
+                matched_vet = best_match
 
         if not matched_vet:
             if vets:

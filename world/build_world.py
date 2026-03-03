@@ -403,6 +403,8 @@ def _spawn_all_named_npcs(rooms):
         npc.db.finisher_type = npc_data.get("finisher_type", "power")
         npc.db.level = npc_data.get("level", 1)
         npc.db.home_territory = territory
+        if npc_data.get("signature_moves"):
+            npc.db.signature_moves = npc_data["signature_moves"]
 
         s = npc_data.get("stats", (10, 10, 10, 10, 10, 10))
         npc.setup_stats(s[0], s[1], s[2], s[3], s[4], s[5])
