@@ -154,7 +154,7 @@ def generate_newsletter(week_number, events):
         d = e["data"]
         stories.append(
             f"INJURY REPORT: {d.get('name', '???')} is nursing a "
-            f"{d.get('injury_type', 'unknown')} injury ({d.get('severity', 'unknown')}).\n"
+            f"{d.get('injury_type', 'unknown')} ({d.get('severity', 'unknown')}).\n"
             f"  {random.choice(_INJURY_FLAVOR)}"
         )
 
