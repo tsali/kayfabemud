@@ -952,7 +952,7 @@ Royal Albert Hall. Technical chain wrestling, catch-as-catch-can, and a British 
 - Fixed TerritoryRoom/ChargenRoom/PlayerHouse inheritance to use Room base class
 
 **Contributors:**
-- RAI (RAI) — design, testing, OVW permission
+- RAI — design, testing, OVW permission
 - Claude Code (Anthropic) — implementation
 
 ## License
