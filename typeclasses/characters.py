@@ -262,6 +262,19 @@ class Wrestler(ObjectParent, DefaultCharacter):
                 startnode="node_welcome",
                 cmd_on_exit=None,
             )
+        elif not self.db.territory:
+            # Chargen finished but disconnected before choosing a starting fed.
+            # Resume at fed selection.
+            from evennia.utils.evmenu import EvMenu
+            self.msg(
+                "\n|wYou still need to pick your starting federation.|n\n"
+            )
+            EvMenu(
+                self,
+                "commands.chargen",
+                startnode="node_starting_fed_intro",
+                cmd_on_exit=None,
+            )
         else:
             # Normal login message
             self.msg(
