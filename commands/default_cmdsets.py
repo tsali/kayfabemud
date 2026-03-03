@@ -24,7 +24,7 @@ from commands.wrestling import (
 from commands.promo import CmdPromo
 
 # Training
-from commands.training import CmdTrain
+from commands.training import CmdTrain, CmdLearn
 
 # Travel
 from commands.travel import CmdTravel
@@ -39,7 +39,7 @@ from commands.manager import CmdHire, CmdFire, CmdManagerPromo, CmdManagerInterf
 from commands.economy import CmdBalance, CmdBuy, CmdSideJob, CmdMerch
 
 # Social
-from commands.social import CmdWho, CmdRoster, CmdRecord, CmdRespond, CmdSkipTutorial
+from commands.social import CmdWho, CmdRoster, CmdRecord, CmdRespond, CmdSkipTutorial, CmdDirtSheet
 
 # Stable
 from commands.stable import CmdStable
@@ -97,6 +97,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
 
         # Training
         self.add(CmdTrain())
+        self.add(CmdLearn())
 
         # Travel
         self.add(CmdTravel())
@@ -126,6 +127,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdRecord())
         self.add(CmdRespond())
         self.add(CmdSkipTutorial())
+        self.add(CmdDirtSheet())
 
         # Stable
         self.add(CmdStable())

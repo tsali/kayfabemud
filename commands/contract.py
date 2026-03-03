@@ -134,6 +134,10 @@ class CmdSign(Command):
             "signed_at": time.time(),
         }
 
+        # Dirt sheet: log contract signing
+        from world.dirtsheet import log_event
+        log_event("contract", name=caller.key, territory=territory, pay=weekly_pay)
+
         caller.msg(
             f"\n|g*** CONTRACT SIGNED ***|n\n"
             f"  Territory: |c{territory}|n\n"

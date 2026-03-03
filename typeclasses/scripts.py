@@ -510,6 +510,15 @@ class MatchScript(DefaultScript):
         elif stars >= 2.0:
             kayfabe_change(a, 1, "good match")
 
+        # Dirt sheet: log notable matches (3+ stars)
+        if stars >= 3.0:
+            from world.dirtsheet import log_event
+            log_event("match_result",
+                      winner=a.key if player_won else b.key,
+                      loser=b.key if player_won else a.key,
+                      stars=stars,
+                      territory=territory)
+
         # Promoter trust gain for good matches
         if territory:
             from world.rules import change_promoter_trust
@@ -519,6 +528,19 @@ class MatchScript(DefaultScript):
                 change_promoter_trust(a, territory, 1, "good match")
             elif stars < 1.0:
                 change_promoter_trust(a, territory, -2, "bad match")
+
+        # Vet rapport gain from wrestling in their territory
+        if territory and a.location:
+            from typeclasses.npcs import NPCWrestler
+            rapport = a.db.vet_rapport or {}
+            for obj in a.location.contents:
+                if isinstance(obj, NPCWrestler) and getattr(obj.db, 'signature_moves', None):
+                    vet_terr = (obj.db.territory or obj.db.home_territory or "").lower()
+                    if vet_terr == territory.lower() or obj.location == a.location:
+                        gain = 10 if player_won else 5
+                        old_r = rapport.get(obj.key, 0)
+                        rapport[obj.key] = min(100, old_r + gain)
+            a.db.vet_rapport = rapport
 
         # Record match history for player A
         import time as _time
@@ -609,6 +631,12 @@ class MatchScript(DefaultScript):
         if title_match and player_won:
             self._resolve_title_win(a, title_match)
             summary += f"  |Y*** NEW CHAMPION: {title_match['title_name']} ***|n\n"
+            # Dirt sheet: log title change
+            from world.dirtsheet import log_event as _log_title
+            _log_title("title_change",
+                       winner=a.key,
+                       title_name=title_match["title_name"],
+                       territory=territory)
         if title_match:
             a.db.pending_title_match = None
 
@@ -765,6 +793,8 @@ class EconomyTickScript(DefaultScript):
         self._process_merch_income()
         self._process_injury_recovery()
         self._process_rank_ups()
+        self._process_rapport_decay()
+        self._process_dirtsheet(week)
 
         # Log every 4 weeks (game month)
         if week % 4 == 0:
@@ -929,12 +959,57 @@ class EconomyTickScript(DefaultScript):
                 continue
 
             new_rank = check_rank_up(char)
-            if new_rank and char.sessions.count():
-                char.msg(
-                    f"\n|Y*** RANK UP ***\n"
-                    f"You have been promoted to |w{new_rank}|Y!\n"
-                    f"The wrestling world is taking notice.|n\n"
-                )
+            if new_rank:
+                # Dirt sheet: log rank up
+                from world.dirtsheet import log_event as _log_rank
+                _log_rank("rank_up", name=char.key, new_rank=new_rank)
+                if char.sessions.count():
+                    char.msg(
+                        f"\n|Y*** RANK UP ***\n"
+                        f"You have been promoted to |w{new_rank}|Y!\n"
+                        f"The wrestling world is taking notice.|n\n"
+                    )
+
+    def _process_rapport_decay(self):
+        """Decay vet rapport by 1/week for vets not in player's territory."""
+        from typeclasses.characters import Wrestler
+
+        wrestlers = Wrestler.objects.filter(
+            db_typeclass_path="typeclasses.characters.Wrestler"
+        )
+
+        for char in wrestlers:
+            if not char.db.chargen_complete:
+                continue
+            rapport = char.db.vet_rapport
+            if not rapport:
+                continue
+
+            territory = (char.db.territory or "").lower()
+            changed = False
+            for vet_name in list(rapport.keys()):
+                # Check if vet is in same territory (approximate by room)
+                in_territory = False
+                if char.location:
+                    for obj in char.location.contents:
+                        if obj.key == vet_name:
+                            in_territory = True
+                            break
+                if not in_territory:
+                    if rapport[vet_name] > 0:
+                        rapport[vet_name] = max(0, rapport[vet_name] - 1)
+                        changed = True
+                    if rapport[vet_name] <= 0:
+                        del rapport[vet_name]
+                        changed = True
+
+            if changed:
+                char.db.vet_rapport = rapport
+
+    def _process_dirtsheet(self, week):
+        """Generate the weekly dirt sheet newsletter."""
+        from world.dirtsheet import process_dirtsheet
+        process_dirtsheet(week)
 
 
 class NPCSchedulerScript(DefaultScript):

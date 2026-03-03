@@ -249,6 +249,87 @@ class CmdRecord(Command):
         caller.msg(msg)
 
 
+class CmdDirtSheet(Command):
+    """
+    Read the weekly dirt sheet newsletter.
+
+    Usage:
+        dirtsheet           - Show the current week's issue
+        dirtsheet list      - List archived issues
+        dirtsheet <number>  - Show archived issue by week number
+
+    The dirt sheet is an auto-generated newsletter summarizing
+    notable matches, title changes, injuries, and other events.
+    """
+    key = "dirtsheet"
+    aliases = ["news", "newsletter"]
+    locks = "cmd:all()"
+    help_category = "Social"
+
+    def func(self):
+        from world.dirtsheet import _get_dirtsheet_script, format_newsletter
+
+        caller = self.caller
+        args = self.args.strip().lower()
+
+        script = _get_dirtsheet_script()
+
+        if not args:
+            # Show current issue
+            issue = script.db.current_issue
+            caller.msg(format_newsletter(issue))
+            return
+
+        if args == "list":
+            archive = script.db.archive or []
+            current = script.db.current_issue
+            if not archive and not current:
+                caller.msg("No dirt sheets have been published yet.")
+                return
+
+            msg = (
+                f"\n|w{'=' * 40}|n\n"
+                f"|w  DIRT SHEET ARCHIVE|n\n"
+                f"|w{'=' * 40}|n\n"
+            )
+            for issue in archive:
+                w = issue.get("week", 0)
+                count = len(issue.get("stories", []))
+                msg += f"  Week {w:4d} — {count} stor{'ies' if count != 1 else 'y'}\n"
+            if current:
+                w = current.get("week", 0)
+                count = len(current.get("stories", []))
+                msg += f"  Week {w:4d} — {count} stor{'ies' if count != 1 else 'y'} |g(current)|n\n"
+            msg += (
+                f"\n  |wType |cdirtsheet <week#>|w to read a past issue.|n\n"
+                f"|w{'=' * 40}|n"
+            )
+            caller.msg(msg)
+            return
+
+        # Try to look up by week number
+        try:
+            week_num = int(args)
+        except ValueError:
+            caller.msg("Usage: dirtsheet [list | <week number>]")
+            return
+
+        # Check current issue
+        current = script.db.current_issue
+        if current and current.get("week") == week_num:
+            caller.msg(format_newsletter(current))
+            return
+
+        # Search archive
+        archive = script.db.archive or []
+        for issue in archive:
+            if issue.get("week") == week_num:
+                caller.msg(format_newsletter(issue))
+                return
+
+        caller.msg(f"No dirt sheet found for week {week_num}.")
+
+
 class CmdSkipTutorial(Command):
     """
     Skip Learning the Ropes.

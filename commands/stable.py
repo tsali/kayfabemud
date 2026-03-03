@@ -197,6 +197,10 @@ class CmdStable(Command):
         registry.db.stables = stables
         caller.db.stable = name
 
+        # Dirt sheet: log stable formation
+        from world.dirtsheet import log_event
+        log_event("stable", action="formed", name=name, leader=caller.key)
+
         caller.msg(
             f"|g*** {name} HAS BEEN FORMED ***|n\n"
             f"You are the leader. Use |wstable invite <player>|n to recruit.\n"
@@ -334,6 +338,9 @@ class CmdStable(Command):
             del stables[stable_name]
             registry.db.stables = stables
             caller.db.stable = ""
+            # Dirt sheet: log stable disbanding
+            from world.dirtsheet import log_event
+            log_event("stable", action="disbanded", name=stable_name, leader=caller.key)
             caller.msg(f"|rYou disbanded {stable_name}.|n")
         else:
             info["members"].remove(caller.key)

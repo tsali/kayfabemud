@@ -125,6 +125,13 @@ def apply_injury(character, injury):
     )
     character.msg(msg)
 
+    # Dirt sheet: log injury
+    from world.dirtsheet import log_event
+    log_event("injury",
+              name=character.key,
+              injury_type=injury_type["name"].lower(),
+              severity=sev_info["name"].lower())
+
 
 def process_injury_recovery(character, is_resting=False):
     """

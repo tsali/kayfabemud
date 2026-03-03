@@ -177,10 +177,16 @@ class CmdWork(Command):
                 caller.msg(f"Unknown move '{self.args.strip()}'. Type |wmoves|n to see options.")
                 return
         else:
-            # Auto-select a move for the phase
-            if not valid_keys:
-                valid_keys = list(MOVES.keys())[:5]
-            move_key = random.choice(valid_keys)
+            # Auto-select a move for the phase (skip learned_only moves player hasn't learned)
+            known = caller.db.known_moves or []
+            available = [k for k in valid_keys
+                         if not MOVES[k].get("learned_only") or k in known]
+            if not available:
+                available = [k for k in list(MOVES.keys())[:5]
+                             if not MOVES[k].get("learned_only") or k in known]
+            if not available:
+                available = list(MOVES.keys())[:5]
+            move_key = random.choice(available)
             move_data = MOVES[move_key]
 
         # Check alignment restrictions
@@ -190,6 +196,22 @@ class CmdWork(Command):
         if move_data.get("face_only") and caller.db.alignment == "Heel":
             caller.msg("That's a babyface move. Heels don't rally the crowd.")
             return
+
+        # Check learned_only moves require knowing them
+        if move_data.get("learned_only"):
+            known = caller.db.known_moves or []
+            # Find the key for this move_data
+            move_key = None
+            for k, v in MOVES.items():
+                if v is move_data:
+                    move_key = k
+                    break
+            if move_key and move_key not in known:
+                caller.msg(
+                    f"|rYou haven't learned {move_data['name']} yet.\n"
+                    f"Find a veteran who knows it and use |wlearn|r to study under them.|n"
+                )
+                return
 
         # Execute
         success, damage, msg = script.execute_move(caller, move_data, is_player_a=True)
@@ -435,18 +457,27 @@ class CmdMoves(Command):
             valid = list(MOVES.keys())
             caller.msg(f"\n|wAll wrestling moves:|n")
 
+        known = caller.db.known_moves or []
         for key in sorted(valid):
             m = MOVES[key]
-            align_tag = ""
+            tags = ""
             if m.get("heel_only"):
-                align_tag = " |r[Heel]|n"
+                tags += " |r[Heel]|n"
             elif m.get("face_only"):
-                align_tag = " |g[Face]|n"
+                tags += " |g[Face]|n"
+            if m.get("learned_only"):
+                if key in known:
+                    tags += " |g[KNOWN]|n"
+                else:
+                    tags += " |x[LOCKED]|n"
             caller.msg(
                 f"  |c{m['name']:25s}|n  {m['type']:10s}  "
-                f"Diff:{m['difficulty']}  Dmg:{m['damage']}{align_tag}"
+                f"Diff:{m['difficulty']}  Dmg:{m['damage']}{tags}"
             )
         caller.msg(f"\n|wUsage: |cwork <move name>|n to use a specific move.")
+        locked_count = sum(1 for k in valid if MOVES[k].get("learned_only") and k not in known)
+        if locked_count:
+            caller.msg(f"|x{locked_count} locked move{'s' if locked_count != 1 else ''} — use |wlearn|x near a veteran to unlock.|n")
 
 
 class CmdCard(Command):
