@@ -1,5 +1,31 @@
 # Changelog — Kayfabe: Protect the Business
 
+## v0.4a — 2026-03-20
+
+### Added
+- **Guidance System**: Objective tracker derives next action from game state (injury, fatigue, match count, rank, tier, money, contract)
+  - `get_current_objective()` on Wrestler — shown at login, in room footers, and in stats display
+  - Room action footers on all 9 room types — show available commands contextually
+  - Post-action breadcrumbs after matches, training, and travel
+- **Roaming NPCs**: NPCs now move toward rooms with players (20% chance per tick, return home after 3 ticks)
+  - NPC scheduler interval reduced from 5 min to 2 min for livelier world feel
+  - Challenge level gate fixed: Tier 1 NPCs (level 1-5) can now issue challenges (was gated at level 15)
+  - Challenge frequency increased from 5% to 15% per tick
+  - Guest appearance rate increased from 20% to 30%, with territory-wide announcements
+- **Player-Targeted Promos**: NPCs address players directly 30% of the time with alignment-pair-flavored lines (7 combinations)
+- **NPC Match Reactions**: Bystander NPCs react to match outcomes (40% chance) with alignment-appropriate commentary
+- **Expanded Ambient Lines**: 15 ambient promo lines per alignment (up from 6)
+- **Match HUD Overhaul**: Box-drawn match status with phase name/color, health bars, momentum bars, crowd heat, contextual action prompts
+- **Phase Transition Announcements**: Dramatic phase-change banners with new-action hints
+- **Stats Display Overhaul**: Reorganized into sections (Identity, Stats, Record, Business, Effects) with rival tracking, best match, contract info, and current objective
+
+### Changed
+- Login message condensed: single status line (rank, level, W-L, money, territory) instead of verbose block
+- Stats command delegates to reusable `get_stats_display()` method
+- NPC display in rooms shows level tags; groups of 5+ show summary with level range
+
+---
+
 ## v0.3a — 2026-03-02
 
 ### Added

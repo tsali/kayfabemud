@@ -75,11 +75,26 @@ class Room(ObjectParent, DefaultRoom):
             groups.setdefault(label, []).append(char)
 
         parts = []
-        for label, chars in groups.items():
-            names = ", ".join(
-                char.get_display_name(looker, **kwargs) for char in chars
-            )
-            parts.append(f"|w{label}:|n {names}")
+        order = ["Players", "Wrestlers", "Trainers", "Managers", "Announcers", "Promoters", "Others"]
+        for label in order:
+            chars = groups.get(label)
+            if not chars:
+                continue
+            if label == "Wrestlers" and len(chars) > 5:
+                # Summary mode for large groups
+                levels = [getattr(c.db, 'level', 1) or 1 for c in chars]
+                min_lv = min(levels)
+                max_lv = max(levels)
+                parts.append(f"|wWrestlers:|n {len(chars)} wrestlers (Lv {min_lv}-{max_lv})")
+            else:
+                names = []
+                for char in chars:
+                    name = char.get_display_name(looker, **kwargs)
+                    lv = getattr(char.db, 'level', None)
+                    if lv is not None and label in ("Wrestlers", "Trainers"):
+                        name = f"{name} |xLv{lv}|n"
+                    names.append(name)
+                parts.append(f"|w{label}:|n {', '.join(names)}")
 
         return "\n".join(parts)
 
@@ -123,6 +138,18 @@ class TerritoryRoom(Room):
         tier_label = tier_names.get(tier, f"Tier {tier}")
         return f"|w[{territory}]|n |x({tier_label})|n"
 
+    def _format_footer(self, looker, commands):
+        """Format a footer with commands and the looker's objective."""
+        from typeclasses.characters import Wrestler
+        parts = []
+        if commands:
+            cmd_str = "  ".join(f"|y{c}|n" for c in commands)
+            parts.append(f"|wCommands:|n {cmd_str}")
+        if isinstance(looker, Wrestler) and looker.db.chargen_complete:
+            if hasattr(looker, 'get_current_objective'):
+                parts.append(f"|y>> NEXT:|n {looker.get_current_objective()}")
+        return "\n".join(parts) if parts else ""
+
 
 class BackyardFedRoom(TerritoryRoom):
     """Tier 1 small fed venues — VFW halls, backyards, fairgrounds."""
@@ -131,6 +158,9 @@ class BackyardFedRoom(TerritoryRoom):
         super().at_object_creation()
         self.db.tier = 1
         self.db.room_type = "backyard"
+
+    def get_display_footer(self, looker, **kwargs):
+        return self._format_footer(looker, ["card", "wrestle <name>", "moves", "promo"])
 
 
 class TrainingSchoolRoom(TerritoryRoom):
@@ -141,6 +171,9 @@ class TrainingSchoolRoom(TerritoryRoom):
         self.db.tier = 2
         self.db.room_type = "training"
 
+    def get_display_footer(self, looker, **kwargs):
+        return self._format_footer(looker, ["card", "wrestle <name>", "train <stat>", "learn"])
+
 
 class ArenaRoom(TerritoryRoom):
     """Match venues — where wrestling happens."""
@@ -150,6 +183,9 @@ class ArenaRoom(TerritoryRoom):
         self.db.room_type = "arena"
         self.db.capacity = 100  # crowd capacity
         self.db.current_event = ""  # name of current show if any
+
+    def get_display_footer(self, looker, **kwargs):
+        return self._format_footer(looker, ["card", "wrestle <name>", "moves", "promo"])
 
 
 class GymRoom(TerritoryRoom):
@@ -172,6 +208,9 @@ class GymRoom(TerritoryRoom):
             name = stat_names.get(bonus, bonus.upper())
             desc = f"{desc}\n|yTraining bonus: {name} +{self.db.bonus_amount}|n"
         return desc
+
+    def get_display_footer(self, looker, **kwargs):
+        return self._format_footer(looker, ["train <stat>", "learn", "stats"])
 
 
 class BarRoom(TerritoryRoom):
@@ -199,6 +238,9 @@ class BarRoom(TerritoryRoom):
             character.ndb.pending_backstage = segment
             character.msg(format_segment_prompt(segment, character))
 
+    def get_display_footer(self, looker, **kwargs):
+        return self._format_footer(looker, ["promo", "who", "roster", "dirtsheet"])
+
 
 class TravelHub(TerritoryRoom):
     """Room that connects territories. Travel command works here."""
@@ -207,6 +249,9 @@ class TravelHub(TerritoryRoom):
         super().at_object_creation()
         self.db.room_type = "travel"
         self.db.destinations = []  # list of territory_keys reachable
+
+    def get_display_footer(self, looker, **kwargs):
+        return self._format_footer(looker, ["travel", "map", "balance"])
 
 
 class LockerRoom(TerritoryRoom):
@@ -234,6 +279,9 @@ class LockerRoom(TerritoryRoom):
             character.ndb.pending_backstage = segment
             character.msg(format_segment_prompt(segment, character))
 
+    def get_display_footer(self, looker, **kwargs):
+        return self._format_footer(looker, ["card", "stats", "rank", "contract"])
+
 
 class PromoterOffice(TerritoryRoom):
     """Promoter's office — booking, trust, negotiations."""
@@ -242,6 +290,9 @@ class PromoterOffice(TerritoryRoom):
         super().at_object_creation()
         self.db.room_type = "office"
         self.db.promoter_name = ""
+
+    def get_display_footer(self, looker, **kwargs):
+        return self._format_footer(looker, ["contract", "titleshot", "shows"])
 
 
 class UniqueRoom(TerritoryRoom):
@@ -292,6 +343,9 @@ class InnRoom(TerritoryRoom):
             f"Type |wrest|n to check in. |wboard|n to read messages. |wpost <msg>|n to leave one."
         )
         return desc
+
+    def get_display_footer(self, looker, **kwargs):
+        return self._format_footer(looker, ["rest", "board", "post", "balance"])
 
 
 class PlayerHouse(Room):

@@ -152,6 +152,12 @@ class CmdTrain(Command):
         # Set cooldown regardless
         caller.attributes.add("last_train_time", now)
 
+        # Post-training breadcrumb
+        if gained:
+            caller.msg(
+                "\n|wType |cstats|w to check your stats, or |cwrestle|w to test them.|n"
+            )
+
 
 LEARN_COOLDOWN = 300  # 5 minutes between learn attempts
 

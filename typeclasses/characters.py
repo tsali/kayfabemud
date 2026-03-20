@@ -250,6 +250,182 @@ class Wrestler(ObjectParent, DefaultCharacter):
         """Return current career rank string."""
         return CAREER_RANKS[min(self.db.rank_index, len(CAREER_RANKS) - 1)]
 
+    def get_current_objective(self):
+        """Derive the player's current objective from game state."""
+        # Injured
+        injury = self.db.injury
+        if injury:
+            return "You're injured. Rest at an inn to recover."
+
+        # Exhaustion
+        fatigue = self.db.fatigue_stacks or 0
+        if fatigue >= 3:
+            return "Exhaustion is hurting you. Find an inn and type: |wrest|n"
+
+        # First match
+        matches = self.db.matches_wrestled or 0
+        if matches == 0:
+            return "Challenge a wrestler! Type: |wwrestle <name>|n"
+
+        # Early wins
+        wins = self.db.wins or 0
+        if wins > 0 and wins < 5:
+            remaining = 5 - wins
+            return f"Win {remaining} more match{'es' if remaining != 1 else ''} to prove yourself. Type: |wcard|n"
+
+        # Rank-up eligible
+        from world.rules import RANK_THRESHOLDS
+        rank_idx = self.db.rank_index or 0
+        next_idx = rank_idx + 1
+        if next_idx in RANK_THRESHOLDS:
+            _, threshold = RANK_THRESHOLDS[next_idx]
+            total_career = (self.db.wins or 0) * 20 + (self.db.xp or 0)
+            if total_career >= threshold:
+                return "You have enough XP to rank up! The business is taking notice."
+
+        # Outgrown backyard
+        tier = self.db.tier or 1
+        if tier == 1 and rank_idx >= 2:
+            return "You've outgrown backyard feds. Type: |wtravel|n"
+
+        # Low on cash
+        money = self.db.money or 0
+        if money < 20:
+            return "Running low on cash. Try: |wsidejob|n"
+
+        # No contract at higher tiers
+        contract = self.db.contract
+        if not contract and tier >= 3:
+            return "Sign a contract for steady income. Visit a Promoter's Office."
+
+        # Default
+        return "Win matches and build your reputation. Type: |wcard|n"
+
+    def get_stats_display(self):
+        """Build a formatted stats display string, reusable from login and stats command."""
+        from commands.career import STAT_NAMES, RANK_COLORS, _stat_bar
+
+        style = self.db.wrestling_style or "Unknown"
+        alignment = self.db.alignment or "Unknown"
+        rank = self.get_rank()
+        rank_color = RANK_COLORS.get(rank, "|w")
+
+        if alignment == "Face":
+            align_str = "|gFace|n"
+        elif alignment == "Heel":
+            align_str = "|rHeel|n"
+        elif alignment == "Anti-Hero":
+            align_str = "|yAnti-Hero|n"
+        else:
+            align_str = alignment
+
+        territory = self.db.territory or "None"
+        tier = self.db.tier or 1
+        tier_names = {1: "Backyard", 2: "Training", 3: "Regional", 3.5: "Developmental", 4: "National"}
+        tier_label = tier_names.get(tier, f"Tier {tier}")
+
+        gender = self.db.gender or "Undisclosed"
+        division_map = {
+            "Male": "Men's Division",
+            "Female": "Women's Division",
+            "Non-Binary": "Open Division",
+            "Undisclosed": "Open Division",
+        }
+        division = division_map.get(gender, "Open Division")
+
+        wins = self.db.wins or 0
+        losses = self.db.losses or 0
+        draws = self.db.draws or 0
+        avg_quality = self.get_match_quality_avg()
+
+        msg = f"\n|w{'=' * 50}|n\n|w  WRESTLER STATUS: {self.key}|n\n|w{'=' * 50}|n\n"
+
+        # Identity
+        msg += (
+            f"  {style} {align_str} | {rank_color}{rank}|n | Lv {self.db.level or 1}\n"
+            f"  {territory} ({tier_label}) | {division}\n"
+        )
+
+        # Stats
+        msg += f"\n|w  --- STATS ---{'':>30}|n\n"
+        stat_order = ["str", "agi", "tec", "cha", "tou", "psy"]
+        for key in stat_order:
+            val = self.get_stat(key)
+            name = STAT_NAMES.get(key, key.upper())
+            msg += f"  {name:12s} {_stat_bar(val)} {val:>5.1f}\n"
+
+        # Record
+        msg += (
+            f"\n|w  --- RECORD ---{'':>29}|n\n"
+            f"  W-L-D: |g{wins}|n-|r{losses}|n-|y{draws}|n"
+            f"  Avg Stars: {'%.1f' % avg_quality}"
+        )
+        best_stars = self.db.best_match_stars or 0
+        if best_stars > 0:
+            msg += f"  Best: {'%.1f' % best_stars} vs {self.db.best_match_opponent or '???'}"
+        # Find top rival
+        rivals = self.db.rivals or {}
+        if rivals:
+            top_rival = max(rivals, key=rivals.get)
+            msg += f"\n  Rival: |c{top_rival}|n ({rivals[top_rival]} matches)"
+        msg += "\n"
+
+        # Business
+        kayfabe = self.db.kayfabe or 50
+        if kayfabe >= 70:
+            k_color = "|g"
+        elif kayfabe >= 40:
+            k_color = "|y"
+        else:
+            k_color = "|r"
+
+        msg += (
+            f"\n|w  --- BUSINESS ---{'':>27}|n\n"
+            f"  Money: |y${self.db.money or 0}|n  XP: {self.db.xp or 0}"
+            f"  Kayfabe: {k_color}{kayfabe}|n/100\n"
+        )
+        if self.db.alignment == "Anti-Hero":
+            msg += f"  Rebel: |y{self.db.rebel_meter or 0}|n/100\n"
+        if self.db.manager:
+            msg += f"  Manager: |m{self.db.manager}|n\n"
+        contract = self.db.contract
+        if contract:
+            msg += f"  Contract: {contract.get('territory', '???')} (${contract.get('weekly_pay', 0)}/wk, {contract.get('weeks_remaining', 0)} wks)\n"
+
+        gear_names = ["Street Clothes", "Basic Trunks", "Custom Boots", "Entrance Jacket", "Full Custom Gear"]
+        vehicle_names = ["On Foot", "Junker Car", "Reliable Sedan", "Van", "Tour Bus"]
+        gear_tier = self.db.gear_tier or 0
+        vehicle_tier = self.db.vehicle_tier or 0
+        msg += f"  Gear: {gear_names[min(gear_tier, 4)]}  Vehicle: {vehicle_names[min(vehicle_tier, 4)]}\n"
+        msg += f"  Finisher: |c{self.db.finisher_name or 'None'}|n ({self.db.finisher_type or '???'})\n"
+
+        # Effects (only if active)
+        effects = []
+        fatigue = self.db.fatigue_stacks or 0
+        if fatigue > 0:
+            effects.append(f"|rFatigue x{fatigue} (-{fatigue * 5}% all)|n")
+        injury = self.db.injury
+        if injury:
+            effects.append(f"|r{injury.get('severity_name', 'Injured')}: {injury.get('name', '???')}|n")
+        rest_bonus = self.db.rest_bonus_active or {}
+        expires = self.db.rest_bonus_expires or 0
+        if rest_bonus and time.time() < expires:
+            remaining = int(expires - time.time())
+            hours = remaining // 3600
+            mins = (remaining % 3600) // 60
+            all_b = rest_bonus.get("all", 0)
+            effects.append(f"|gWell-Rested +{all_b} ({hours}h {mins}m)|n")
+        if effects:
+            msg += f"\n|w  --- EFFECTS ---{'':>28}|n\n"
+            for eff in effects:
+                msg += f"  {eff}\n"
+
+        # Objective
+        msg += f"\n|y>> NEXT:|n {self.get_current_objective()}\n"
+        msg += f"|w{'=' * 50}|n"
+
+        return msg
+
     def at_post_puppet(self, **kwargs):
         """Called after puppeting. Launch chargen if not complete."""
         super().at_post_puppet(**kwargs)
@@ -276,26 +452,33 @@ class Wrestler(ObjectParent, DefaultCharacter):
                 cmd_on_exit=None,
             )
         else:
-            # Normal login message
+            # Normal login — condensed status
+            rank = self.get_rank()
+            wins = self.db.wins or 0
+            losses = self.db.losses or 0
+            territory = self.db.territory or "Unknown"
+            tier = self.db.tier or 1
+            tier_names = {1: "Backyard", 2: "Training", 3: "Regional", 3.5: "Developmental", 4: "National"}
+            tier_label = tier_names.get(tier, f"Tier {tier}")
+
             self.msg(
                 f"\n|w*** KAYFABE: Protect the Business ***|n\n"
-                f"Welcome back, |c{self.key}|n. "
-                f"You are at |w{self.location.key}|n.\n"
-                f"|yType |wcharcreate|y to make a new wrestler, "
-                f"|wcharselect|y to switch between them.|n\n"
+                f"Welcome back, |c{self.key}|n.\n"
+                f"|w{rank}|n | Lv {self.db.level or 1} | "
+                f"|g{wins}|nW-|r{losses}|nL | "
+                f"|y${self.db.money or 0}|n | "
+                f"{territory} ({tier_label})\n"
             )
 
-            # Show fatigue warning
+            # Show active effects (compact)
             fatigue = self.db.fatigue_stacks or 0
             if fatigue > 0:
                 penalty = fatigue * 5
                 self.msg(
-                    f"|r*** FATIGUE WARNING: {fatigue} stack{'s' if fatigue != 1 else ''} "
-                    f"(-{penalty}% all checks) ***|n\n"
-                    f"|xRest at an inn or your house to clear fatigue.|n\n"
+                    f"|r  Fatigue x{fatigue} (-{penalty}% all checks)"
+                    f" — rest at an inn to clear|n"
                 )
 
-            # Show rest bonus status
             rest_bonus = self.db.rest_bonus_active or {}
             expires = self.db.rest_bonus_expires or 0
             if rest_bonus and time.time() < expires:
@@ -303,10 +486,19 @@ class Wrestler(ObjectParent, DefaultCharacter):
                 hours = remaining // 3600
                 mins = (remaining % 3600) // 60
                 all_b = rest_bonus.get("all", 0)
-                bonus_str = f"+{all_b} all stats" if all_b else ""
                 self.msg(
-                    f"|g*** WELL-RESTED: {bonus_str} ({hours}h {mins}m remaining) ***|n\n"
+                    f"|g  Well-Rested: +{all_b} all stats ({hours}h {mins}m remaining)|n"
                 )
+
+            injury = self.db.injury
+            if injury:
+                self.msg(
+                    f"|r  Injured: {injury.get('severity_name', '???')} "
+                    f"{injury.get('name', '???')}|n"
+                )
+
+            # Current objective
+            self.msg(f"\n|y>> NEXT:|n {self.get_current_objective()}\n")
 
             self.execute_cmd("look")
 

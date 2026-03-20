@@ -152,7 +152,7 @@ class MatchScript(DefaultScript):
             )
 
     def _show_status(self, viewer):
-        """Show match status bar to a participant."""
+        """Show match status HUD to a participant."""
         a = self.db.wrestler_a
         b = self.db.wrestler_b
         if not a or not b:
@@ -160,31 +160,75 @@ class MatchScript(DefaultScript):
 
         a_hp = max(0, self.db.a_health)
         b_hp = max(0, self.db.b_health)
+        a_mom = self.db.a_momentum or 0
+        b_mom = self.db.b_momentum or 0
         heat = self.db.crowd_heat
 
-        a_bar = _health_bar(a_hp)
-        b_bar = _health_bar(b_hp)
-        heat_bar = _heat_bar(heat)
-
-        viewer.msg(
-            f"  |c{a.key:20s}|n {a_bar} {a_hp:>3}%\n"
-            f"  |c{b.key:20s}|n {b_bar} {b_hp:>3}%\n"
-            f"  |yCrowd Heat:|n          {heat_bar} {heat:>3}%"
-        )
-
         phase = self.current_phase()
+        phase_colors = {
+            "opening": "|w",
+            "heat": "|r",
+            "hope": "|y",
+            "comeback": "|g",
+            "finish": "|c",
+        }
+        phase_hints = {
+            "opening": "Both wrestlers are feeling each other out",
+            "heat": "The heel is in control",
+            "hope": "A brief flurry — cut off!",
+            "comeback": "The crowd is behind the comeback!",
+            "finish": "This is it — someone is going down!",
+        }
+        pc = phase_colors.get(phase, "|w")
+        hint = phase_hints.get(phase, "")
+
+        # Determine which wrestler is which from viewer's perspective
+        a_align = getattr(a.db, 'alignment', '') or ''
+        b_align = getattr(b.db, 'alignment', '') or ''
+        a_align_tag = f" |g[Face]|n" if a_align == "Face" else f" |r[Heel]|n" if a_align == "Heel" else f" |y[Anti-Hero]|n" if a_align == "Anti-Hero" else ""
+        b_align_tag = f" |g[Face]|n" if b_align == "Face" else f" |r[Heel]|n" if b_align == "Heel" else f" |y[Anti-Hero]|n" if b_align == "Anti-Hero" else ""
+
+        # Build HUD
+        bar_w = 16
+        viewer.msg(f"\n|w{'=' * 56}|n")
+        viewer.msg(f"  {pc}{phase.upper()} PHASE|n — {hint}")
+        viewer.msg(f"|w{'=' * 56}|n")
+
+        # Wrestler B (opponent) first
+        viewer.msg(f"  {b.key}{b_align_tag}")
+        viewer.msg(f"  Health:   {_health_bar(b_hp, bar_w)} {b_hp:>3}%")
+        viewer.msg(f"  Momentum: {_momentum_bar(b_mom, bar_w)} {b_mom:>3}")
+        viewer.msg("")
+
+        # Viewer/Player
+        if viewer == a:
+            viewer.msg(f"  |wYou|n{a_align_tag}")
+            viewer.msg(f"  Health:   {_health_bar(a_hp, bar_w)} {a_hp:>3}%")
+            viewer.msg(f"  Momentum: {_momentum_bar(a_mom, bar_w)} {a_mom:>3}")
+        else:
+            viewer.msg(f"  {a.key}{a_align_tag}")
+            viewer.msg(f"  Health:   {_health_bar(a_hp, bar_w)} {a_hp:>3}%")
+            viewer.msg(f"  Momentum: {_momentum_bar(a_mom, bar_w)} {a_mom:>3}")
+
+        viewer.msg("")
+        viewer.msg(f"  Crowd Heat: {_heat_bar(heat, bar_w)} {heat:>3}%")
+        viewer.msg(f"|w{'-' * 56}|n")
+
+        # Action prompts per phase
         if self.db.pending_pin:
-            viewer.msg("|r>>> |wType |ckickout|w to kick out of the pin! |r<<<|n")
+            viewer.msg("|r  >>> Type |wkickout|r to kick out of the pin! <<<|n")
         elif phase == "opening":
-            viewer.msg("|wYour move:|n |cwork|n (attack), |csell|n (let them work you)")
+            viewer.msg("  Actions: |cwork|n (attack)  |csell|n (let them work you)")
         elif phase == "heat":
-            viewer.msg("|wYour move:|n |cwork|n (attack), |csell|n (take a beating), |chope|n (fight back briefly)")
+            viewer.msg("  Actions: |cwork|n (attack)  |csell|n (take a beating)  |chope|n (fight back)")
         elif phase == "hope":
-            viewer.msg("|wYour move:|n |csell|n (get cut off), |cwork|n (sneak in a shot)")
+            viewer.msg("  Actions: |csell|n (get cut off)  |cwork|n (sneak in a shot)")
         elif phase == "comeback":
-            viewer.msg("|wYour move:|n |cwork|n (attack), |ccomeback|n (fire up!), |cfinish|n (hit your finisher)")
+            viewer.msg("  Actions: |cwork|n (attack)  |ccomeback|n (fire up!)  |cfinish|n (hit finisher)")
         elif phase == "finish":
-            viewer.msg("|wYour move:|n |cwork|n (attack), |cfinish|n (hit your finisher)")
+            viewer.msg("  Actions: |cwork|n (attack)  |cfinish|n (hit finisher)")
+
+        viewer.msg(f"|w{'=' * 56}|n")
 
     def execute_move(self, attacker, move_data, is_player_a=True):
         """
@@ -412,9 +456,35 @@ class MatchScript(DefaultScript):
         return success, msg
 
     def advance_phase(self):
-        """Move to the next match phase."""
+        """Move to the next match phase with dramatic announcement."""
         if self.db.phase_index < len(MATCH_PHASES) - 1:
             self.db.phase_index += 1
+            phase = self.current_phase()
+
+            phase_colors = {
+                "heat": "|r",
+                "hope": "|y",
+                "comeback": "|g",
+                "finish": "|c",
+            }
+            phase_announcements = {
+                "heat": ("HEAT SEGMENT", "The heel takes control! You're being worked over!"),
+                "hope": ("HOPE SPOT", "A brief glimmer -- fight back!"),
+                "comeback": ("THE COMEBACK", "You're firing up! The crowd feels it!\n  New action: |wcomeback|n (full momentum!)"),
+                "finish": ("THE FINISH", "This is it! Go for the finisher!\n  New action: |wfinish|n (hit your finisher!)"),
+            }
+            pc = phase_colors.get(phase, "|w")
+            name, hint = phase_announcements.get(phase, (phase.upper(), ""))
+
+            a = self.db.wrestler_a
+            if a:
+                a.msg(
+                    f"\n{pc}{'=' * 40}|n\n"
+                    f"  {pc}>>> {name} <<<|n\n"
+                    f"  {hint}\n"
+                    f"{pc}{'=' * 40}|n"
+                )
+
             self.announce_phase()
             return True
         return False
@@ -698,6 +768,20 @@ def _heat_bar(pct, width=20):
     else:
         color = "|x"
     return f"[{color}{'!' * filled}|x{'.' * empty}|n]"
+
+
+def _momentum_bar(value, width=16):
+    """Render a momentum bar (0-20+ scale)."""
+    max_val = 20
+    filled = min(int(value / max_val * width), width)
+    empty = width - filled
+    if value >= 15:
+        color = "|Y"
+    elif value >= 8:
+        color = "|c"
+    else:
+        color = "|x"
+    return f"[{color}{'>' * filled}|x{'.' * empty}|n]"
 
 
 class FatigueScript(DefaultScript):
@@ -1026,7 +1110,7 @@ class NPCSchedulerScript(DefaultScript):
         self.key = "npc_scheduler"
         self.desc = "NPC ambient behavior and guest appearances"
         self.persistent = True
-        self.interval = 300  # 5 minutes
+        self.interval = 120  # 2 minutes
 
         self.db.guest_slots = {}  # territory_key -> {npc_id, expires_at}
         self.db.tick_count = 0
@@ -1038,8 +1122,12 @@ class NPCSchedulerScript(DefaultScript):
         # Ambient NPC actions
         self._do_ambient_actions()
 
-        # Guest appearance rotation every 12 ticks (1 hour)
-        if self.db.tick_count % 12 == 0:
+        # Return roaming NPCs to home after 3 ticks
+        if self.db.tick_count % 3 == 0:
+            self._return_roaming_npcs()
+
+        # Guest appearance rotation every 30 ticks (~1 hour)
+        if self.db.tick_count % 30 == 0:
             self._rotate_guests()
 
     def _do_ambient_actions(self):
@@ -1076,10 +1164,10 @@ class NPCSchedulerScript(DefaultScript):
                     npc.do_ambient_promo()
 
             # 5% chance an NPC issues a challenge to a player
-            if random.random() < 0.05:
+            if random.random() < 0.15:
                 wrestlers = [n for n in npcs if isinstance(n, NPCWrestler)
                              and n.db.role == "wrestler"
-                             and n.db.level >= 15]
+                             and n.db.level >= 1]
                 if wrestlers:
                     # Gender-weighted selection: prefer same-division NPCs
                     players_in_room = [
@@ -1109,6 +1197,76 @@ class NPCSchedulerScript(DefaultScript):
                     else:
                         npc = random.choice(wrestlers)
                         npc.issue_challenge()
+
+            # NPC roaming: move NPCs toward rooms with players
+            if random.random() < 0.2:
+                self._roam_npcs(room)
+
+    def _roam_npcs(self, player_room):
+        """Move an NPC from elsewhere in the territory to a room with a player."""
+        from typeclasses.npcs import NPCWrestler
+        from typeclasses.rooms import TerritoryRoom
+        from evennia.utils.search import search_tag
+
+        territory_key = getattr(player_room.db, 'territory_key', '')
+        if not territory_key:
+            return
+
+        # Find all territory rooms
+        territory_rooms = search_tag(territory_key, category="territory")
+        if not territory_rooms:
+            return
+
+        # Find NPCs NOT in the player's room but in the same territory
+        candidates = []
+        for room in territory_rooms:
+            if room == player_room:
+                continue
+            for obj in room.contents:
+                if isinstance(obj, NPCWrestler) and obj.db.role in ("wrestler", "backyard"):
+                    # Don't move NPCs that have been away from home too long
+                    ticks_away = getattr(obj.db, 'roam_ticks', 0) or 0
+                    if ticks_away < 3:
+                        candidates.append(obj)
+
+        if not candidates:
+            return
+
+        npc = random.choice(candidates)
+        alignment = npc.db.alignment or "Face"
+
+        # Track roaming state
+        if not getattr(npc.db, 'home_room', None):
+            npc.db.home_room = npc.location
+        npc.db.roam_ticks = (getattr(npc.db, 'roam_ticks', 0) or 0) + 1
+
+        # Move NPC to player's room
+        npc.move_to(player_room, quiet=True)
+
+        # Announce arrival with alignment flavor
+        if alignment == "Heel":
+            arrival = f"|c{npc.key}|n swagger into the room, eyeing everyone with contempt."
+        elif alignment == "Face":
+            arrival = f"|c{npc.key}|n walks in and nods respectfully to the crowd."
+        else:
+            arrival = f"|c{npc.key}|n slips into the room, sizing up everyone silently."
+
+        player_room.msg_contents(arrival)
+
+    def _return_roaming_npcs(self):
+        """Return roaming NPCs to their home rooms after a few ticks."""
+        from typeclasses.npcs import NPCWrestler
+
+        for npc in NPCWrestler.objects.filter(db_typeclass_path="typeclasses.npcs.NPCWrestler"):
+            home = getattr(npc.db, 'home_room', None)
+            ticks = getattr(npc.db, 'roam_ticks', 0) or 0
+            if home and ticks >= 3 and npc.location != home:
+                npc.move_to(home, quiet=True)
+                npc.db.roam_ticks = 0
+                if npc.location:
+                    npc.location.msg_contents(
+                        f"|x{npc.key} heads back to their usual spot.|n"
+                    )
 
     def _rotate_guests(self):
         """
@@ -1151,7 +1309,7 @@ class NPCSchedulerScript(DefaultScript):
                 del guests[terr_key]
 
         # Maybe start a new guest spot (20% chance per rotation)
-        if random.random() < 0.2 and len(guests) < 3:
+        if random.random() < 0.3 and len(guests) < 3:
             self._start_guest_spot(guests, now)
 
         self.db.guest_slots = guests
@@ -1219,6 +1377,17 @@ class NPCSchedulerScript(DefaultScript):
             f"{guest_npc.key} has arrived for a guest spot!\n"
             f"The crowd buzz is electric!|n\n"
         )
+
+        # Announce to all players in the territory
+        from typeclasses.characters import Wrestler
+        for obj in Wrestler.objects.filter(db_typeclass_path="typeclasses.characters.Wrestler"):
+            if (obj.sessions.count() and obj.db.chargen_complete
+                    and (obj.db.territory or "").lower() == dest_key
+                    and obj.location != dest_room):
+                obj.msg(
+                    f"\n|y*** GUEST APPEARANCE: {guest_npc.key} has arrived at "
+                    f"{dest_key.upper()}! ***|n"
+                )
 
 
 class StableRegistryScript(DefaultScript):

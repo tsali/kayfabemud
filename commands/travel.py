@@ -170,6 +170,11 @@ class CmdTravel(Command):
         caller.msg(f"|gYou arrive at {info[0]}.|n\n")
         caller.execute_cmd("look")
 
+        # Post-travel breadcrumb
+        caller.msg(
+            "|wType |ccard|w to see who's here, or |clook|w to explore.|n"
+        )
+
 
 def _handle_fan_encounter(caller, encounter):
     """

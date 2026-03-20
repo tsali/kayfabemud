@@ -681,6 +681,9 @@ def _npc_finishes(script, caller):
 def _end_match(script, caller):
     """End the match, show results, clean up."""
     stars, payoff, xp, summary = script.end_match()
+    winner_is_player = (script.db.winner == "a")
+    npc = script.db.wrestler_b
+
     caller.msg(summary)
     if caller.location:
         from world.rules import star_rating_display
@@ -690,6 +693,19 @@ def _end_match(script, caller):
             exclude=[caller],
         )
 
-    # Clean up the script — delete() removes it from the character entirely
-    # stop() only pauses it but leaves it attached to the character
+        # NPC reactions from bystanders
+        from typeclasses.npcs import NPCWrestler
+        winner = caller if winner_is_player else npc
+        loser = npc if winner_is_player else caller
+        for obj in caller.location.contents:
+            if isinstance(obj, NPCWrestler) and obj != npc:
+                if hasattr(obj, 'react_to_match'):
+                    obj.react_to_match(winner, loser, stars)
+
+    # Post-match breadcrumb
+    caller.msg(
+        "\n|wType |cstats|w to see progress, or |ccard|w for another match.|n"
+    )
+
+    # Clean up the script
     script.delete()

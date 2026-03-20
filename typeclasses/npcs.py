@@ -18,6 +18,15 @@ AMBIENT_PROMOS = {
         "{name} waves to the crowd, who cheer loudly.",
         '{name} shouts: "I\'m ready for anyone tonight!"',
         "{name} checks the ring ropes, testing their tautness.",
+        "{name} signs a t-shirt for a young fan.",
+        "{name} does push-ups in the corner, getting pumped.",
+        "{name} claps their hands, rallying the crowd.",
+        "{name} paces the ring, eyes locked on the entrance ramp.",
+        "{name} rolls their neck and bounces on the balls of their feet.",
+        "{name} shakes hands with the timekeeper.",
+        '{name} points to the crowd: "This one\'s for all of you!"',
+        "{name} adjusts their elbow pad and takes a deep breath.",
+        "{name} gives a thumbs-up to the announcer.",
     ],
     "Heel": [
         "{name} sneers at the crowd, drawing boos.",
@@ -26,6 +35,15 @@ AMBIENT_PROMOS = {
         "{name} polishes their boots, ignoring everyone.",
         "{name} flexes in a mirror, admiring themselves.",
         '{name} yells: "I\'m the best in this building and you all know it!"',
+        "{name} shoves a ringside chair out of their way.",
+        "{name} demands a ring attendant hold the ropes open.",
+        "{name} spits on the floor and glares at the crowd.",
+        '{name} laughs: "You people paid to see greatness. You\'re welcome."',
+        "{name} checks their reflection in a phone screen.",
+        "{name} points at the camera and mouths something threatening.",
+        "{name} leans on the turnbuckle, looking bored.",
+        "{name} cracks their knuckles menacingly.",
+        '{name} snaps at a fan: "Get that phone out of my face!"',
     ],
     "Anti-Hero": [
         "{name} leans against the wall, arms crossed, watching everyone.",
@@ -34,6 +52,54 @@ AMBIENT_PROMOS = {
         '{name} says: "I don\'t follow the script. I AM the script."',
         "{name} acknowledges the crowd with a curt nod.",
         "{name} scans the room like they're sizing up every last person.",
+        "{name} sits on the top turnbuckle, feet dangling.",
+        "{name} stares at the ceiling, lost in thought.",
+        "{name} tosses a water bottle into the crowd without looking.",
+        '{name} mutters: "Same crap, different night."',
+        "{name} pulls their hood up and lurks in the shadows.",
+        "{name} stretches against the ropes, stone-faced.",
+        "{name} lights a cigarette backstage, breaking about three rules.",
+        "{name} gives a barely perceptible nod to a passerby.",
+        "{name} leans on the barricade, ignoring both cheers and boos.",
+    ],
+}
+
+TARGETED_PROMOS = {
+    ("Heel", "Face"): [
+        '{npc} sneers at {player}: "You don\'t belong here, kid."',
+        '{npc} gets in {player}\'s face: "I\'m everything you wish you were."',
+        '{npc} points at {player}: "That title run of yours? I\'m ending it."',
+        '{npc} mocks {player}\'s entrance pose, drawing laughs.',
+        '{npc} tells {player}: "The crowd cheers for you now. Wait until I\'m done."',
+    ],
+    ("Face", "Face"): [
+        '{npc} nods at {player}: "Keep fighting the good fight."',
+        '{npc} offers {player} a fist bump: "Respect."',
+        '{npc} claps {player} on the shoulder: "You\'re getting better."',
+        '{npc} tells {player}: "We should tag up sometime."',
+    ],
+    ("Heel", "Heel"): [
+        '{npc} gives {player} a knowing look: "We should talk business."',
+        '{npc} sidles up to {player}: "Stay out of my way, and I\'ll stay out of yours."',
+        '{npc} whispers to {player}: "I know who\'s getting the push. Play it smart."',
+        '{npc} raises an eyebrow at {player}: "Temporary alliance?"',
+    ],
+    ("Face", "Heel"): [
+        '{npc} stares down {player}: "I know what you\'re about. It won\'t work on me."',
+        '{npc} steps between {player} and a fan: "Leave them alone."',
+        '{npc} tells {player}: "Sooner or later, you\'ll answer for all of it."',
+    ],
+    ("Anti-Hero", "Face"): [
+        '{npc} glances at {player}: "Don\'t expect me to save you."',
+        '{npc} shrugs at {player}: "You do you. I\'ll do me."',
+    ],
+    ("Anti-Hero", "Heel"): [
+        '{npc} locks eyes with {player}: "Try me. See what happens."',
+        '{npc} smirks at {player}: "You\'re not as tough as you think."',
+    ],
+    ("Anti-Hero", "Anti-Hero"): [
+        '{npc} and {player} share a long, silent stare. Mutual respect? Maybe.',
+        '{npc} raises their beer toward {player}. Not a toast -- a warning.',
     ],
 }
 
@@ -146,6 +212,22 @@ class NPCWrestler(ObjectParent, DefaultCharacter):
         elif role == "announcer":
             lines = ANNOUNCER_LINES
         else:
+            # 30% chance for player-targeted line
+            from typeclasses.characters import Wrestler
+            players = [
+                obj for obj in self.location.contents
+                if isinstance(obj, Wrestler) and obj.db.chargen_complete
+                and obj.sessions.count()
+            ]
+            if players and random.random() < 0.3:
+                target = random.choice(players)
+                p_align = target.db.alignment or "Face"
+                key = (alignment, p_align)
+                targeted = TARGETED_PROMOS.get(key, [])
+                if targeted:
+                    line = random.choice(targeted).format(npc=self.key, player=target.key)
+                    self.location.msg_contents(f"|x{line}|n")
+                    return
             lines = AMBIENT_PROMOS.get(alignment, AMBIENT_PROMOS["Face"])
 
         line = random.choice(lines).format(name=self.key)
@@ -232,6 +314,49 @@ class NPCWrestler(ObjectParent, DefaultCharacter):
             )
 
         self.location.msg_contents(msg)
+
+    def react_to_match(self, winner, loser, stars):
+        """
+        React to a match that just happened in this NPC's room.
+        Called from _end_match() in wrestling.py.
+        40% chance to react.
+        """
+        if not self.location or random.random() > 0.4:
+            return
+
+        alignment = self.db.alignment or "Face"
+        w_name = winner.key if winner else "the winner"
+        l_name = loser.key if loser else "the loser"
+
+        if alignment == "Heel":
+            reactions = [
+                f'|r{self.key} slow-claps mockingly: "Was that supposed to impress me?"|n',
+                f"|r{self.key} sneers at {l_name}: \"Pathetic. I could've beaten both of you.\"|n",
+                f"|r{self.key} yawns theatrically: \"Wake me when someone good gets in the ring.\"|n",
+                f'|r{self.key} shakes their head at {w_name}: "Lucky. That\'s all that was."|n',
+            ]
+            if stars >= 4:
+                reactions.append(
+                    f'|r{self.key} looks annoyed that {w_name} is getting all the attention.|n'
+                )
+        elif alignment == "Face":
+            reactions = [
+                f"|g{self.key} applauds the match. \"Hell of a fight!\"|n",
+                f"|g{self.key} nods at {w_name}: \"Great match out there.\"|n",
+                f"|g{self.key} pats {l_name} on the back: \"You'll get 'em next time.\"|n",
+            ]
+            if stars >= 4:
+                reactions.append(
+                    f"|g{self.key} leads the crowd in a standing ovation for both wrestlers!|n"
+                )
+        else:
+            reactions = [
+                f"|y{self.key} watches silently, giving nothing away.|n",
+                f"|y{self.key} nods once -- barely perceptible -- at {w_name}.|n",
+                f"|y{self.key} stares at the ring. Processing. Planning.|n",
+            ]
+
+        self.location.msg_contents(random.choice(reactions))
 
 
 class NPCManager(ObjectParent, DefaultCharacter):
